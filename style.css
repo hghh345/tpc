@@ -304,3 +304,254 @@ h2{
     transform:translateY(0);
 
 }
+/* -------------------- */
+/* UPLOAD PAGE */
+/* -------------------- */
+
+.upload{
+
+    width:min(1400px,90vw);
+
+    margin:auto;
+
+    padding:80px 0;
+
+}
+
+.upload-header{
+
+    margin-bottom:80px;
+
+}
+
+.upload-header h1{
+
+    margin-bottom:30px;
+
+}
+
+.progress-section{
+
+    margin-bottom:60px;
+
+}
+
+.progress-title{
+
+    font-size:1.2rem;
+
+    margin-bottom:20px;
+
+}
+
+#selected-strip{
+
+    display:grid;
+
+    grid-template-columns:repeat(12,1fr);
+
+    gap:10px;
+
+    margin-bottom:20px;
+
+}
+
+.slot{
+
+    aspect-ratio:1;
+
+    border:1px solid black;
+
+}
+
+.slot img{
+
+    width:100%;
+    height:100%;
+
+    object-fit:cover;
+
+}
+
+#counter{
+
+    font-size:1.2rem;
+
+}
+
+#upload-box{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    border:2px solid black;
+
+    min-height:320px;
+
+    margin:80px 0;
+
+    cursor:pointer;
+
+}
+
+.upload-copy{
+
+    text-align:center;
+
+    font-size:2rem;
+
+    line-height:1.4;
+
+}
+
+#gallery{
+
+    display:grid;
+
+    grid-template-columns:
+    repeat(auto-fill,minmax(180px,1fr));
+
+    gap:18px;
+
+    margin-top:60px;
+
+}
+
+.photo{
+
+    aspect-ratio:1;
+
+    cursor:pointer;
+
+    border:2px solid transparent;
+
+    transition:.15s;
+
+}
+
+.photo img{
+
+    width:100%;
+    height:100%;
+
+    object-fit:cover;
+
+}
+
+.photo:hover{
+
+    transform:scale(1.02);
+
+}
+
+.photo.selected{
+
+    border:2px solid black;
+
+}
+
+#complete{
+
+    display:none;
+
+    margin:120px 0;
+
+}
+
+#complete.show{
+
+    display:block;
+
+}
+/* -------------------- */
+/* CHECKOUT */
+/* -------------------- */
+
+.checkout{
+
+width:min(900px,90vw);
+
+margin:auto;
+
+padding:80px 0;
+
+}
+
+.plans{
+
+display:grid;
+
+grid-template-columns:1fr 1fr;
+
+gap:30px;
+
+margin:70px 0;
+
+}
+
+.plan{
+
+border:2px solid black;
+
+padding:40px;
+
+cursor:pointer;
+
+transition:.2s;
+
+}
+
+.plan:hover{
+
+transform:translateY(-4px);
+
+}
+
+.plan.selected{
+
+background:black;
+
+color:white;
+
+}
+
+.save{
+
+margin-top:20px;
+
+font-size:1rem;
+
+}
+
+.summary{
+
+display:flex;
+
+justify-content:space-between;
+
+font-size:1.4rem;
+
+margin:60px 0;
+
+}
+
+#checkout-button{
+
+font-family:inherit;
+
+font-size:2rem;
+
+background:none;
+
+border:none;
+
+text-decoration:underline;
+
+cursor:pointer;
+
+padding:0;
+
+}
