@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>tiny photo club</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:"Arial Narrow",Arial,sans-serif;text-transform:lowercase;background:#fff;color:#000;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+h1,.big{font-weight:400;letter-spacing:-.06em;text-shadow:0 0 .5px rgba(0,0,0,.6),0 0 1px rgba(0,0,0,.15)}
+.hero{height:100vh;display:flex;align-items:center;justify-content:center;padding:8vw}
+h1{font-size:clamp(5rem,13vw,11rem);line-height:.88}
+.block{min-height:100vh;position:relative;padding:8vw}
+.small{font-size:1.3rem;max-width:280px;line-height:1.2}
+.big{font-size:clamp(4rem,9vw,8rem);line-height:.9;max-width:800px}
+.slideshow{position:absolute;right:8vw;top:120px;width:min(430px,38vw);transform:rotate(-2deg)}
+.slideshow img{width:100%;display:block}
+.audit{font-size:1.5rem;line-height:1.5;white-space:pre-line}
+.join{padding:10vw;font-size:3rem;text-decoration:underline}
+</style></head>
+<body>
+<section class="hero"><h1>hello,<br>digital hoarder.</h1></section>
+<section class="block">
+<div class="small">you've been meaning<br>to print these.</div>
+<div class="slideshow"><img id="fast" src="images/1.jpg"></div>
+</section>
+<section class="block">
+<div class="audit" id="audit"></div>
+</section>
+<section class="block">
+<div class="big">remember them?</div>
+<div class="slideshow" style="transform:rotate(2deg)"><img id="slow" src="images/10.jpg"></div>
+</section>
+<section class="block"><div class="big">your camera roll<br>is becoming<br>a museum.</div></section>
+<section class="block">
+<div class="big">tiny photo club</div><br><br>
+<div class="small">we rescue photos from the bottom of your camera roll.<br><br>every month we print a handful and mail them to you.<br><br>that's it.</div>
+</section>
+<div class="join">join →</div>
+<script>
+const fastImgs=["images/1.jpg","images/2.jpg","images/3.jpg","images/4.jpg","images/5.jpg","images/6.jpg","images/7.jpg","images/8.jpg","images/9.jpg"].sort(()=>Math.random()-.5);
+const slowImgs=["images/10.jpg","images/11.jpg","images/12.jpg","images/13.jpg","images/14.jpg","images/15.jpg"].sort(()=>Math.random()-.5);
+let fi=0,si=0;
+setInterval(()=>{fi=(fi+1)%fastImgs.length;fast.src=fastImgs[fi]},250);
+setInterval(()=>{si=(si+1)%slowImgs.length;slow.src=slowImgs[si]},1800);
+const audits=[
+["18,492","381 screenshots","42 sunsets","19 blurry nights","12 concerts","1 picture you'll wish you printed"],
+["24,116","742 screenshots","53 dogs","29 airport windows","14 birthdays","1 photo your future self needs"],
+["11,903","417 memes","87 selfies","33 dinners","18 late nights","1 tiny masterpiece"]
+];
+const a=audits[Math.floor(Math.random()*audits.length)];
+audit.textContent=`camera roll audit
+
+${a[0]} photos
+
+☑ ${a[1]}
+☑ ${a[2]}
+☑ ${a[3]}
+☑ ${a[4]}
+☑ ${a[5]}`;
+</script>
+</body></html>
