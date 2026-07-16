@@ -1,0 +1,306 @@
+/* -------------------- */
+/* RESET */
+/* -------------------- */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+
+    background:#fff;
+    color:#000;
+
+    font-family:"Arial Narrow",Arial,sans-serif;
+
+    text-transform:lowercase;
+
+    overflow-x:hidden;
+
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+
+}
+
+/* -------------------- */
+/* TYPOGRAPHY */
+/* -------------------- */
+
+h1,
+h2{
+
+    font-weight:400;
+
+    letter-spacing:-.06em;
+
+    line-height:.88;
+
+    text-shadow:
+    0 0 .5px rgba(0,0,0,.55),
+    0 0 1px rgba(0,0,0,.12);
+
+}
+
+h1{
+
+    font-size:clamp(5rem,13vw,11rem);
+
+}
+
+h2{
+
+    font-size:clamp(4rem,9vw,8rem);
+
+    max-width:900px;
+
+}
+
+p{
+
+    font-size:1.35rem;
+
+    line-height:1.4;
+
+    max-width:520px;
+
+}
+
+.copy{
+
+    font-size:1.5rem;
+
+    line-height:1.2;
+
+    max-width:260px;
+
+}
+
+.audit{
+
+    font-size:1.6rem;
+
+    line-height:1.5;
+
+    white-space:pre-line;
+
+}
+
+/* -------------------- */
+/* LAYOUT */
+/* -------------------- */
+
+main{
+
+    width:100%;
+
+}
+
+.hero{
+
+    min-height:100vh;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    padding:8vw;
+
+}
+
+.section{
+
+    min-height:100vh;
+
+    position:relative;
+
+    padding:8vw;
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:center;
+
+}
+
+.about{
+
+    gap:40px;
+
+}
+
+/* -------------------- */
+/* SLIDESHOWS */
+/* -------------------- */
+
+.slideshow{
+
+    position:absolute;
+
+    right:8vw;
+
+    top:120px;
+
+    width:min(430px,40vw);
+
+}
+
+.slideshow img{
+
+    width:100%;
+
+    display:block;
+
+    user-select:none;
+
+    pointer-events:none;
+
+}
+
+.fast{
+
+    transform:rotate(-3deg);
+
+}
+
+.slow{
+
+    transform:rotate(2deg);
+
+}
+
+/* -------------------- */
+/* CTA */
+/* -------------------- */
+
+.cta{
+
+    display:inline-block;
+
+    margin-top:60px;
+
+    color:#000;
+
+    font-size:3rem;
+
+    text-decoration:underline;
+
+    text-underline-offset:8px;
+
+    transition:.18s;
+
+}
+
+.cta:hover{
+
+    transform:translateX(8px);
+
+}
+
+/* -------------------- */
+/* PHOTO EFFECT */
+/* -------------------- */
+
+.slideshow img{
+
+    transition:.15s;
+
+}
+
+.slideshow:hover img{
+
+    transform:scale(1.02);
+
+}
+
+/* -------------------- */
+/* MOBILE */
+/* -------------------- */
+
+@media (max-width:900px){
+
+.hero{
+
+    justify-content:flex-start;
+
+}
+
+.section{
+
+    padding:50px 30px;
+
+}
+
+.slideshow{
+
+    position:relative;
+
+    top:auto;
+    right:auto;
+
+    margin-top:50px;
+
+    width:100%;
+
+    max-width:360px;
+
+}
+
+h1{
+
+    font-size:4.3rem;
+
+}
+
+h2{
+
+    font-size:3.2rem;
+
+}
+
+.copy{
+
+    margin-bottom:30px;
+
+}
+
+.cta{
+
+    font-size:2rem;
+
+}
+
+}
+/* -------------------- */
+/* SCROLL ANIMATION */
+/* -------------------- */
+
+.section{
+
+    opacity:0;
+
+    transform:translateY(40px);
+
+    transition:
+
+    opacity .8s ease,
+
+    transform .8s ease;
+
+}
+
+.section.visible{
+
+    opacity:1;
+
+    transform:translateY(0);
+
+}
