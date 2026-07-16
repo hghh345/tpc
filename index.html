@@ -34,8 +34,8 @@ h1{font-size:clamp(5rem,13vw,11rem);line-height:.88}
 </section>
 <div class="join">join →</div>
 <script>
-const fastImgs=["images/1.jpg","images/2.jpg","images/3.jpg","images/4.jpg","images/5.jpg","images/6.jpg","images/7.jpg","images/8.jpg","images/9.jpg"].sort(()=>Math.random()-.5);
-const slowImgs=["images/10.jpg","images/11.jpg","images/12.jpg","images/13.jpg","images/14.jpg","images/15.jpg"].sort(()=>Math.random()-.5);
+const fastImgs=["image1.jpeg","image2.jpeg","image3.jpeg","image4.jpeg","image5.jpeg","image11.jpeg","image10.jpeg","image6.jpeg","image7.jpeg"].sort(()=>Math.random()-.5);
+const slowImgs=["image8.jpeg","image9.jpeg","image10.jpeg","image12.jpeg","image3.jpeg","image4.jpeg"].sort(()=>Math.random()-.5);
 let fi=0,si=0;
 setInterval(()=>{fi=(fi+1)%fastImgs.length;fast.src=fastImgs[fi]},250);
 setInterval(()=>{si=(si+1)%slowImgs.length;slow.src=slowImgs[si]},1800);
