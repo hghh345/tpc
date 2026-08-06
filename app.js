@@ -158,3 +158,43 @@ sections.forEach(section=>{
 observer.observe(section);
 
 });
+/* -------------------------- */
+/* PRODUCT SLIDESHOW */
+/* -------------------------- */
+
+const productImages = [
+
+"table1.jpeg",
+"table2.jpeg",
+"table3.jpeg",
+"table4.jpeg"
+
+];
+
+let productIndex = 0;
+
+const productSlide =
+document.querySelector("#product-slideshow");
+
+setInterval(() => {
+
+    productIndex++;
+
+    if(productIndex >= productImages.length){
+
+        productIndex = 0;
+
+    }
+
+    productSlide.style.opacity = 0;
+
+    setTimeout(() => {
+
+        productSlide.src =
+        productImages[productIndex];
+
+        productSlide.style.opacity = 1;
+
+    },200);
+
+},1800);

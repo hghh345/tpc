@@ -555,3 +555,54 @@ cursor:pointer;
 padding:0;
 
 }
+/* -------------------- */
+/* PRODUCT SECTION */
+/* -------------------- */
+
+.product-section{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:80px;
+
+    flex-wrap:wrap;
+
+}
+
+.product-copy{
+
+    flex:1;
+
+    min-width:300px;
+
+}
+
+.product-copy p{
+
+    margin-top:40px;
+
+    font-size:1.5rem;
+
+}
+
+.product-slideshow{
+
+    flex:1;
+
+    display:flex;
+
+    justify-content:center;
+
+}
+
+.product-slideshow img{
+
+    width:min(600px,100%);
+
+    transition:opacity .4s ease;
+
+}
