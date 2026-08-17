@@ -19,10 +19,9 @@
 <header class="upload-header">
 
 <h1>
-
-pick your dozen.
-
+    pick your dozen.
 </h1>
+
 <section class="preview-section">
 
     <div class="preview-copy">
@@ -59,105 +58,85 @@ pick your dozen.
 </section>
 
 <p>
-
-choose twelve photos
-you'd be happy to find
-in your mailbox.
-
+    choose twelve photos
+    <br>
+    you'd be happy to find
+    <br>
+    in your mailbox.
 </p>
 
 </header>
 
+
 <section class="progress-section">
 
-<div class="progress-title">
+    <div class="progress-title">
+        your dozen
+    </div>
 
-your dozen
+    <div id="selected-strip">
+        <!-- javascript fills your prints here -->
+    </div>
 
-</div>
+    <div id="counter">
+        0 / 12
+    </div>
 
-<div id="selected-strip">
-
-<div class="slot"></div>
-<div class="slot"></div>
-<div class="slot"></div>
-<div class="slot"></div>
-
-<div class="slot"></div>
-<div class="slot"></div>
-<div class="slot"></div>
-<div class="slot"></div>
-
-<div class="slot"></div>
-<div class="slot"></div>
-<div class="slot"></div>
-<div class="slot"></div>
-
-</div>
-
-<div id="counter">
-
-0 / 12
-
-</div>
+    <div id="dozen-message"></div>
 
 </section>
 
 
 <label id="upload-box">
 
-<input
-type="file"
-id="photo-upload"
-multiple
-accept="image/*"
-hidden>
+    <input
+        type="file"
+        id="photo-upload"
+        multiple
+        accept="image/*"
+        hidden>
 
-<div class="upload-copy">
+    <div class="upload-copy">
 
-+
+        +
 
-<br><br>
+        <br><br>
 
-drop photos here
+        drop photos here
 
-<br>
+        <br>
 
-or click to upload
+        or click to upload
 
-</div>
+    </div>
 
 </label>
 
 
 <section id="gallery">
 
-<!-- javascript fills this -->
+    <!-- javascript fills uploaded photos here -->
 
 </section>
 
 
 <section id="complete">
 
-<h2>
+    <h2>
+        that's a good dozen.
+    </h2>
 
-that's a good dozen.
+    <p>
+        twelve tiny memories.
+    </p>
 
-</h2>
+    <a
+        href="checkout.html"
+        class="cta">
 
-<p>
+        continue →
 
-twelve tiny memories.
-
-</p>
-
-<a
-href="checkout.html"
-class="cta">
-
-continue →
-
-</a>
+    </a>
 
 </section>
 
