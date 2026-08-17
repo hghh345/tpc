@@ -158,6 +158,7 @@ sections.forEach(section=>{
 observer.observe(section);
 
 });
+
 /* -------------------------- */
 /* PRODUCT SLIDESHOW */
 /* -------------------------- */
