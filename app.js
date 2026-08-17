@@ -163,30 +163,38 @@ observer.observe(section);
 /* -------------------------- */
 
 const productImages = [
-    "i1.JPG",
-    "i2.JPG",
-    "i3.JPG",
-    "i4.JPG"
+
+"i1.JPG",
+"i2.JPG",
+"i3.JPG",
+"i4.JPG"
+
 ];
 
 let productIndex = 0;
 
-const productSlide = document.querySelector("#product-slideshow");
-
-console.log("product slideshow:", productSlide);
-console.log("images:", productImages);
+const productSlide =
+document.querySelector("#product-slideshow");
 
 setInterval(() => {
 
     productIndex++;
 
-    if (productIndex >= productImages.length) {
+    if(productIndex >= productImages.length){
+
         productIndex = 0;
+
     }
 
-    console.log("changing to:", productImages[productIndex]);
+    productSlide.style.opacity = 0;
 
-    productSlide.src = productImages[productIndex];
+    setTimeout(() => {
 
-}, 1800);
+        productSlide.src =
+        productImages[productIndex];
 
+        productSlide.style.opacity = 1;
+
+    },200);
+
+},1800);
