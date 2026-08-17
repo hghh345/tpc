@@ -169,7 +169,7 @@ const productImages = [
 "i1.JPG",
 "i2.JPG",
 "i3.JPG",
-"i4.JPG"
+"i5.JPG"
 
 ];
 
