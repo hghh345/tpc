@@ -643,3 +643,30 @@ padding:0;
     width: 100%;
     display: block;
 }
+/* -------------------------- */
+/* SELECTED PRINTS */
+/* -------------------------- */
+
+.slot {
+    position: relative;
+}
+
+.remove-print {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    border: none;
+    background: white;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    line-height: 20px;
+    cursor: pointer;
+}
+
+#dozen-message {
+    margin-top: 20px;
+    font-size: 1.5rem;
+}
