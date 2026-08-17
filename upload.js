@@ -172,3 +172,43 @@ uploadBox.addEventListener("drop",(e)=>{
     );
 
 });
+/* -------------------------- */
+/* PRINT PREVIEW SLIDESHOW */
+/* -------------------------- */
+
+const printImages = [
+    "i1.JPG",
+    "i2.JPG",
+    "i3.JPG",
+    "i4.JPG",
+    "i5.JPG",
+    "i6.JPG",
+    "i7.JPG",
+    "i8.JPG",
+    "i9.JPG",
+    "i10.JPG",
+    "i11.JPG",
+    "i12.JPG"
+].sort(() => Math.random() - 0.5);
+
+let printIndex = 0;
+
+const printSlide =
+    document.querySelector("#print-slideshow");
+
+if (printSlide) {
+
+    setInterval(() => {
+
+        printIndex++;
+
+        if (printIndex >= printImages.length) {
+            printIndex = 0;
+        }
+
+        printSlide.src =
+            printImages[printIndex];
+
+    }, 500);
+
+}

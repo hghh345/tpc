@@ -606,3 +606,40 @@ padding:0;
     transition:opacity .4s ease;
 
 }
+.preview-section {
+    min-height: 100vh;
+    padding: 8vw;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8vw;
+}
+
+.preview-copy {
+    max-width: 420px;
+}
+
+.preview-copy h2 {
+    font-size: clamp(4rem, 9vw, 8rem);
+    line-height: .9;
+    font-weight: 400;
+    letter-spacing: -.06em;
+    text-shadow:
+        0 0 .5px rgba(0,0,0,.6),
+        0 0 1px rgba(0,0,0,.15);
+}
+
+.preview-copy p {
+    font-size: 1.3rem;
+    line-height: 1.2;
+}
+
+.print-slideshow {
+    width: min(420px, 55vw);
+    transform: rotate(-2deg);
+}
+
+.print-slideshow img {
+    width: 100%;
+    display: block;
+}
