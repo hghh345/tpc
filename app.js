@@ -163,38 +163,32 @@ observer.observe(section);
 /* -------------------------- */
 
 const productImages = [
-
-"i1.JPG",
-"i2.JPG",
-"i3.JPG",
-"i4.JPG"
-
+    "i1.JPG",
+    "i2.JPG",
+    "i3.JPG",
+    "i4.JPG"
 ];
 
 let productIndex = 0;
 
-const productSlide =
-document.querySelector("#product-slideshow");
+const productSlide = document.querySelector("#product-slideshow");
 
-setInterval(() => {
+if (productSlide) {
 
-    productIndex++;
+    setInterval(() => {
 
-    if(productIndex >= productImages.length){
+        productIndex = (productIndex + 1) % productImages.length;
 
-        productIndex = 0;
+        productSlide.style.opacity = "0";
 
-    }
+        setTimeout(() => {
 
-    productSlide.style.opacity = 0;
+            productSlide.src = productImages[productIndex];
 
-    setTimeout(() => {
+            productSlide.style.opacity = "1";
 
-        productSlide.src =
-        productImages[productIndex];
+        }, 200);
 
-        productSlide.style.opacity = 1;
+    }, 1800);
 
-    },200);
-
-},1800);
+}
