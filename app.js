@@ -164,10 +164,10 @@ observer.observe(section);
 
 const productImages = [
 
-"table1.jpeg",
-"table2.jpeg",
-"table3.jpeg",
-"table4.jpeg"
+"i1.JPG",
+"i2.JPG",
+"i3.JPG",
+"i4.JPG"
 
 ];
 
