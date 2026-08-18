@@ -910,3 +910,30 @@ padding:0;
     }
 
 }
+/* -------------------------- */
+/* REMOVE BUTTON — ALL DEVICES */
+/* -------------------------- */
+
+#selected-strip .slot {
+    position: relative !important;
+}
+
+#selected-strip .remove-print {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    position: absolute !important;
+    top: 5px !important;
+    right: 5px !important;
+
+    width: 28px !important;
+    height: 28px !important;
+
+    padding: 0 !important;
+    margin: 0 !important;
+
+    z-index: 20 !important;
+
+    cursor: pointer !important;
+}
