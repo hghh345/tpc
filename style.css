@@ -987,3 +987,50 @@ padding:0;
     outline: 2px solid #000;
     outline-offset: 2px;
 }
+/* -------------------------- */
+/* SUCCESS PAGE */
+/* -------------------------- */
+
+.success {
+    min-height: 100vh;
+    box-sizing: border-box;
+
+    padding: 40px 30px 80px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.success h1 {
+    font-size: clamp(4rem, 12vw, 8rem);
+    line-height: .85;
+
+    margin: 100px 0 30px;
+}
+
+.success > p {
+    max-width: 600px;
+
+    font-size: 1.4rem;
+    line-height: 1.15;
+
+    margin: 0 0 25px;
+}
+
+.success-note {
+    margin-top: 30px;
+
+    padding: 20px;
+
+    border: 1px solid #000;
+
+    max-width: 500px;
+}
+
+.success-note p {
+    margin: 0;
+
+    font-size: 1.1rem;
+    line-height: 1.2;
+}
