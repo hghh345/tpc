@@ -344,7 +344,9 @@ h2{
         flex-direction: column;
         align-items: flex-start;
 
-        gap: 30px;
+        gap: 10px;
+         padding-bottom: 20px;
+
     }
 
     .preview-copy {
@@ -362,6 +364,8 @@ h2{
         align-self: center;
         margin: 5px 0 15px;
         transform: rotate(-2deg);
+         padding-bottom: 20px;
+
     }
 
     .print-slideshow img {
