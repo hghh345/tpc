@@ -306,6 +306,171 @@ h2{
     }
 
 }
+/* -------------------------- */
+/* UPLOAD PAGE — MOBILE */
+/* -------------------------- */
+
+@media (max-width: 600px) {
+
+    .upload {
+        padding: 24px 20px 60px;
+    }
+
+    .upload-header {
+        padding: 20px 0 40px;
+    }
+
+    .upload-header h1 {
+        font-size: clamp(4rem, 18vw, 6rem);
+        line-height: .85;
+        margin-bottom: 30px;
+    }
+
+    .upload-header > p {
+        font-size: 1.15rem;
+        line-height: 1.15;
+    }
+
+
+    /* -------------------------- */
+    /* PRINT PREVIEW */
+    /* -------------------------- */
+
+    .preview-section {
+        min-height: auto;
+        padding: 35px 0 55px;
+
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+
+        gap: 30px;
+    }
+
+    .preview-copy {
+        max-width: 100%;
+    }
+
+    .preview-copy p {
+        font-size: 1.15rem;
+        line-height: 1.15;
+    }
+
+    .print-slideshow {
+        width: 82vw;
+        max-width: none;
+        align-self: center;
+        margin: 5px 0 15px;
+        transform: rotate(-2deg);
+    }
+
+    .print-slideshow img {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+
+
+    /* -------------------------- */
+    /* YOUR DOZEN */
+    /* -------------------------- */
+
+    .progress-section {
+        padding: 35px 0 40px;
+    }
+
+    .progress-title {
+        font-size: 2rem;
+        margin-bottom: 15px;
+    }
+
+    #selected-strip {
+        width: 100%;
+        gap: 6px;
+    }
+
+    .slot {
+        width: calc((100% - 18px) / 4);
+        aspect-ratio: 1;
+    }
+
+    #counter {
+        margin-top: 15px;
+        font-size: 1.1rem;
+    }
+
+    #dozen-message {
+        margin-top: 15px;
+        font-size: 1.25rem;
+    }
+
+
+    /* -------------------------- */
+    /* PHOTO BANK */
+    /* -------------------------- */
+
+    .photo-bank-intro {
+        padding: 35px 0 25px;
+    }
+
+    .photo-bank-intro h2 {
+        font-size: 2.5rem;
+        line-height: .9;
+        margin-bottom: 20px;
+    }
+
+    .photo-bank-intro p {
+        font-size: 1.05rem;
+        line-height: 1.2;
+        margin-bottom: 18px;
+    }
+
+
+    /* -------------------------- */
+    /* UPLOAD BOX */
+    /* -------------------------- */
+
+    #upload-box {
+        width: 100%;
+        min-height: 220px;
+        padding: 20px;
+    }
+
+    .upload-copy {
+        font-size: 1.1rem;
+    }
+
+
+    /* -------------------------- */
+    /* PHOTO BANK GRID */
+    /* -------------------------- */
+
+    #gallery {
+        width: 100%;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 7px;
+    }
+
+    .photo {
+        width: 100%;
+        aspect-ratio: 1;
+    }
+
+
+    /* -------------------------- */
+    /* COMPLETE */
+    /* -------------------------- */
+
+    #complete {
+        padding: 70px 0 30px;
+    }
+
+    #complete h2 {
+        font-size: clamp(3.5rem, 15vw, 5rem);
+        line-height: .85;
+    }
+
+}
 /* -------------------- */
 /* SCROLL ANIMATION */
 /* -------------------- */
