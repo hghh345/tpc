@@ -474,8 +474,8 @@ h2{
 @media (max-width: 600px) {
 
     .preview-section {
-        gap: 5px;
-        padding-bottom: 5px;
+        gap: 0;
+        padding-bottom: 0;
     }
 
     .print-slideshow {
