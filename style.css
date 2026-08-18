@@ -894,3 +894,28 @@ padding:0;
     }
 
 }
+@media (max-width: 600px) {
+
+    #gallery {
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        grid-auto-rows: auto !important;
+        gap: 7px !important;
+        width: 100% !important;
+    }
+
+    #gallery .photo {
+        width: 100% !important;
+        height: auto !important;
+        aspect-ratio: 1 / 1 !important;
+        overflow: hidden !important;
+    }
+
+    #gallery .photo img {
+        display: block !important;
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+    }
+
+}
