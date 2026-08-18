@@ -331,52 +331,41 @@ h2{
         line-height: 1.15;
     }
 
+    /* PRINT PREVIEW */
+    .preview-section {
+        min-height: auto;
+        padding: 35px 0 0;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0;
+    }
 
-   
-/* -------------------------- */
-/* PRINT PREVIEW */
-/* -------------------------- */
+    .preview-copy {
+        max-width: 100%;
+    }
 
-.preview-section {
-    min-height: auto;
-    padding: 35px 0 0;
+    .preview-copy p {
+        font-size: 1.15rem;
+        line-height: 1.15;
+    }
 
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+    .print-slideshow {
+        width: 82vw;
+        max-width: none;
+        align-self: center;
+        margin: 20px 0 30px 0; 
+        padding: 0;
+        transform: rotate(-2deg);
+    }
 
-    gap: 0;
-}
+    .print-slideshow img {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
 
-.preview-copy {
-    max-width: 100%;
-}
-
-.preview-copy p {
-    font-size: 1.15rem;
-    line-height: 1.15;
-}
-
-.print-slideshow {
-    width: 82vw;
-    max-width: none;
-    align-self: center;
-    margin: 20px 0 30px 0; 
-    padding: 0;
-    transform: rotate(-2deg);
-}
-
-.print-slideshow img {
-    width: 100%;
-    height: auto;
-    display: block;
-}
-
-
-    /* -------------------------- */
     /* YOUR DOZEN */
-    /* -------------------------- */
-
     .progress-section {
         padding: 0 0 40px;
     }
@@ -386,32 +375,25 @@ h2{
         margin-bottom: 15px;
     }
 
- @media (max-width: 600px) {
+    #selected-strip {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+    }
 
-   #selected-strip {
-    width: 100%;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);  /* Change from 3 to 4 columns, or adjust to what you want */
-    gap: 10px;
-}
+    .slot {
+        width: 100%;
+        aspect-ratio: 1;
+        overflow: hidden;
+    }
 
-.slot {
-    width: 100%;
-    aspect-ratio: 1;
-    overflow: hidden;
-}
-
-.slot img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-}
-
-
-}
+    .slot img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
 
     #counter {
         margin-top: 15px;
@@ -423,11 +405,7 @@ h2{
         font-size: 1.25rem;
     }
 
-
-    /* -------------------------- */
     /* PHOTO BANK */
-    /* -------------------------- */
-
     .photo-bank-intro {
         padding: 35px 0 25px;
     }
@@ -444,11 +422,7 @@ h2{
         margin-bottom: 18px;
     }
 
-
-    /* -------------------------- */
     /* UPLOAD BOX */
-    /* -------------------------- */
-
     #upload-box {
         width: 100%;
         min-height: 220px;
@@ -459,11 +433,7 @@ h2{
         font-size: 1.1rem;
     }
 
-
-    /* -------------------------- */
     /* PHOTO BANK GRID */
-    /* -------------------------- */
-
     #gallery {
         width: 100%;
         grid-template-columns: repeat(3, 1fr);
@@ -475,11 +445,7 @@ h2{
         aspect-ratio: 1;
     }
 
-
-    /* -------------------------- */
     /* COMPLETE */
-    /* -------------------------- */
-
     #complete {
         padding: 70px 0 30px;
     }
@@ -489,6 +455,7 @@ h2{
         line-height: .85;
     }
 
+}
 
 
 /* -------------------- */
