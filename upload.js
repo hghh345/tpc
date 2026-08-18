@@ -62,12 +62,14 @@ upload.addEventListener("change", function (event) {
 
             photo.dataset.src = e.target.result;
 
-            photo.addEventListener("click", () => {
+           photo.addEventListener("click", (event) => {
 
-                addPrint(photo);
+             event.preventDefault();
+             event.stopPropagation();
 
-            });
+            addPrint(photo);
 
+         });
             gallery.appendChild(photo);
 
         };
