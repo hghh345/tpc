@@ -937,3 +937,20 @@ padding:0;
 
     cursor: pointer !important;
 }
+.back-button {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 20px 0 0;
+    font-family: inherit;
+    font-size: 1rem;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+    .back-button {
+        margin-top: 10px;
+        font-size: 1rem;
+    }
+}
