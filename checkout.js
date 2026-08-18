@@ -28,37 +28,26 @@ plans.forEach(plan => {
 /* CHECKOUT */
 /* -------------------------- */
 
-checkoutButton.addEventListener("click", () => {
+checkoutButton.addEventListener("click", async () => {
 
     const email = emailInput.value.trim();
 
     /*
-       Make sure an email was entered
+       Check email
     */
 
     if (!email) {
 
         emailInput.focus();
-
-        emailInput.setCustomValidity(
-            "please enter your email ♡"
-        );
-
         emailInput.reportValidity();
 
         return;
 
     }
-
-
-    /*
-       Make sure the email looks valid
-    */
 
     if (!emailInput.checkValidity()) {
 
         emailInput.focus();
-
         emailInput.reportValidity();
 
         return;
@@ -67,8 +56,7 @@ checkoutButton.addEventListener("click", () => {
 
 
     /*
-       For now, just confirm everything is ready.
-       We'll replace this with Stripe Checkout next.
+       Find selected plan
     */
 
     const selectedPlan =
@@ -77,10 +65,91 @@ checkoutButton.addEventListener("click", () => {
     const selectedPrice =
         selectedPlan.dataset.price;
 
-    console.log("email:", email);
-    console.log("plan:", selectedPlan.querySelector("h2").textContent);
-    console.log("price:", selectedPrice);
 
-    alert("Next we'll connect Stripe Checkout.");
+    /*
+       Match selected plan to Stripe Price ID
+    */
+
+    let priceId;
+
+    if (selectedPrice === "18") {
+
+        priceId =
+            "price_1U5umPA5iFvf2pvF3lnKlghA";
+
+    }
+
+    else if (selectedPrice === "45") {
+
+        priceId =
+            "price_1U5un7A5iFvf2pvFsiwTmiSF";
+
+    }
+
+
+    /*
+       Disable button while Stripe session
+       is being created
+    */
+
+    checkoutButton.disabled = true;
+
+    checkoutButton.textContent =
+        "one moment ♡";
+
+
+    try {
+
+        const response = await fetch(
+            "/api/create-checkout-session",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    priceId: priceId,
+                    email: email
+                })
+            }
+        );
+
+
+        const data = await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.error || "Something went wrong."
+            );
+
+        }
+
+
+        /*
+           Send customer to Stripe
+        */
+
+        window.location.href = data.url;
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        alert(
+            "something went wrong ♡ please try again."
+        );
+
+        checkoutButton.disabled = false;
+
+        checkoutButton.textContent =
+            "continue to checkout →";
+
+    }
 
 });
