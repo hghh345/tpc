@@ -222,7 +222,7 @@ function showFullMessage() {
     if (!dozenMessage) return;
 
     dozenMessage.textContent =
-        "your dozen is full ♡";
+        "your dozen is full ♡ ↓ scroll down to keep going";
 
 }
 
