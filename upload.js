@@ -274,11 +274,14 @@ uploadBox.addEventListener("drop", (e) => {
 
             photo.dataset.src = event.target.result;
 
-            photo.addEventListener("click", () => {
+           photo.addEventListener("click", (event) => {
 
-                addPrint(photo);
+          event.preventDefault();
+          event.stopPropagation();
 
-            });
+          addPrint(photo);
+
+        });
 
             gallery.appendChild(photo);
 
