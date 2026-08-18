@@ -2,7 +2,6 @@
 <html lang="en">
 
 <head>
-<button class="back-button" onclick="history.back()">← back</button>
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,6 +16,8 @@
 
 <main class="checkout">
 
+<a href="javascript:history.back()" class="back-button">← back</a>
+
 <h1>
 
 your first envelope.
@@ -27,6 +28,8 @@ your first envelope.
 
 twelve tiny prints.
 
+<br>
+
 delivered every month.
 
 </p>
@@ -36,70 +39,80 @@ delivered every month.
 <div class="plan" data-price="18">
 
 <h2>
-
 monthly
-
 </h2>
 
 <p>
-
 12 photos
-
 <br>
-
 €18 / month
-
 </p>
 
 </div>
 
+
 <div class="plan selected" data-price="45">
 
 <h2>
-
 three months
-
 </h2>
 
 <p>
-
-36 photos
-
+12 photos / month
 <br>
-
-€45
-
+€45 / 3 months
 </p>
 
 <div class="save">
-
 save €9
-
 </div>
 
 </div>
 
 </section>
 
+
+<!-- EMAIL -->
+
+<div class="email-section">
+
+<label for="email">
+your email
+</label>
+
+<input
+    type="email"
+    id="email"
+    name="email"
+    placeholder="you@example.com"
+    autocomplete="email"
+    required
+>
+
+</div>
+
+
+<!-- SUMMARY -->
+
 <div class="summary">
 
 selected plan
 
 <span id="price">
-
 €45
-
 </span>
 
 </div>
 
-<button id="checkout-button">
+
+<button id="checkout-button" type="button">
 
 continue to checkout →
 
 </button>
 
 </main>
+
 
 <script src="checkout.js"></script>
 
