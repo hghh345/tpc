@@ -475,6 +475,22 @@ h2{
     }
 
 }
+@media (max-width: 600px) {
+
+    .preview-section {
+        gap: 10px;
+        padding-bottom: 20px;
+    }
+
+    .print-slideshow {
+        margin-bottom: 0;
+    }
+
+    .upload-header > p {
+        margin-top: 15px;
+    }
+
+}
 /* -------------------- */
 /* SCROLL ANIMATION */
 /* -------------------- */
