@@ -8,121 +8,109 @@ const supabase = createClient(
     process.env.SUPABASE_SECRET_KEY
 );
 
-
 module.exports = async (req, res) => {
 
     if (req.method !== "POST") {
-
         return res.status(405).send("Method not allowed");
-
     }
-
 
     try {
 
-        /*
-           Stripe sends the webhook as raw JSON.
-        */
-
-        const event = req.body;
-
+        const signature = req.headers["stripe-signature"];
 
         /*
-           For now, we're only listening for
-           successful Checkout sessions.
+           Vercel gives us the raw request body
+           when we disable its automatic body parser.
         */
 
-        if (event.type !== "checkout.session.completed") {
-
-            return res.status(200).json({
-                received: true
-            });
-
-        }
-
-
-        const session = event.data.object;
-
-
-        /*
-           Get the customer's email.
-        */
-
-        const email =
-            session.customer_details?.email ||
-            session.customer_email;
-
-
-        if (!email) {
-
-            console.error(
-                "No customer email found."
-            );
-
-            return res.status(400).json({
-                error: "No customer email"
-            });
-
-        }
-
-
-        /*
-           Create the Supabase Auth user.
-        */
-
-        const {
-            data: userData,
-            error: userError
-        } = await supabase.auth.admin.createUser({
-
-            email: email,
-
-            email_confirm: true
-
-        });
-
-
-        if (userError) {
-
-            /*
-               If the user already exists,
-               we'll handle that properly next.
-            */
-
-            console.error(userError);
-
-            return res.status(500).json({
-                error: "Could not create user"
-            });
-
-        }
-
-
-        const userId = userData.user.id;
-
-
-        console.log(
-            "Created Supabase user:",
-            userId
+        const event = stripe.webhooks.constructEvent(
+            req.body,
+            signature,
+            process.env.STRIPE_WEBHOOK_SECRET
         );
 
+        console.log("Stripe event:", event.type);
+
+        /*
+           For now, we only care about successful
+           Checkout payments.
+        */
+
+        if (event.type === "checkout.session.completed") {
+
+            const session = event.data.object;
+
+            const email =
+                session.customer_details?.email ||
+                session.customer_email;
+
+            console.log(
+                "Successful checkout:",
+                email
+            );
+
+            /*
+               Create the Supabase user.
+            */
+
+            const {
+                data: userData,
+                error: userError
+            } = await supabase.auth.admin.createUser({
+
+                email: email,
+
+                email_confirm: true
+
+            });
+
+            if (userError) {
+
+                console.error(
+                    "Supabase user error:",
+                    userError
+                );
+
+                return res.status(500).json({
+                    error: "Could not create user"
+                });
+
+            }
+
+            console.log(
+                "Created Supabase user:",
+                userData.user.id
+            );
+
+        }
 
         return res.status(200).json({
-            received: true,
-            user_id: userId
+            received: true
         });
 
+    } catch (error) {
 
-    }
+        console.error(
+            "Webhook error:",
+            error
+        );
 
-    catch (error) {
-
-        console.error(error);
-
-        return res.status(500).json({
+        return res.status(400).json({
             error: "Webhook failed"
         });
 
     }
+};
 
+
+/*
+   IMPORTANT:
+   Stripe needs the raw request body
+   for signature verification.
+*/
+
+module.exports.config = {
+    api: {
+        bodyParser: false
+    }
 };
