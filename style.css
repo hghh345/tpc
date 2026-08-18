@@ -383,7 +383,6 @@ h2{
     }
 
     .slot {
-        width: 100%;
         aspect-ratio: 1;
         overflow: hidden;
     }
