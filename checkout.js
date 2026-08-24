@@ -75,14 +75,14 @@ checkoutButton.addEventListener("click", async () => {
     if (selectedPrice === "18") {
 
         priceId =
-            "price_1U5umPA5iFvf2pvF3lnKlghA";
+            "price_1U82TOA5iFvf2pvF4uGCTXSS";
 
     }
 
     else if (selectedPrice === "45") {
 
         priceId =
-            "price_1U5un7A5iFvf2pvFsiwTmiSF";
+            "price_1U82U6A5iFvf2pvFr1MFGx4U";
 
     }
 
