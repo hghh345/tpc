@@ -23,8 +23,6 @@ module.exports = async (req, res) => {
 
         /*
            Only allow our two Tiny Photo Club prices.
-           This prevents someone from sending a random
-           Stripe Price ID to your endpoint.
         */
 
         const allowedPrices = [
@@ -39,6 +37,16 @@ module.exports = async (req, res) => {
         }
 
 
+        /*
+           Decide which Tiny Photo Club plan was selected.
+        */
+
+        const plan =
+            priceId === "price_1U5umPA5iFvf2pvF3lnKlghA"
+                ? "monthly"
+                : "three_months";
+
+
         const session = await stripe.checkout.sessions.create({
 
             mode: "subscription",
@@ -51,6 +59,24 @@ module.exports = async (req, res) => {
                     quantity: 1
                 }
             ],
+
+            /*
+               This information travels with the
+               Stripe Checkout Session and will be
+               available to our webhook.
+            */
+
+            metadata: {
+                plan: plan,
+                price_id: priceId
+            },
+
+            subscription_data: {
+                metadata: {
+                    plan: plan,
+                    price_id: priceId
+                }
+            },
 
             shipping_address_collection: {
                 allowed_countries: [
