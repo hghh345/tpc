@@ -25,10 +25,10 @@ module.exports = async (req, res) => {
            Only allow our two Tiny Photo Club prices.
         */
 
-        const allowedPrices = [
-            "price_1U5umPA5iFvf2pvF3lnKlghA",
-            "price_1U5un7A5iFvf2pvFsiwTmiSF"
-        ];
+      const allowedPrices = [
+    "price_1U82TOA5iFvf2pvF4uGCTXSS",
+    "price_1U82U6A5iFvf2pvFr1MFGx4U"
+    ];
 
         if (!allowedPrices.includes(priceId)) {
             return res.status(400).json({
