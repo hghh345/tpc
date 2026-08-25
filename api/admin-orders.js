@@ -41,7 +41,7 @@ module.exports = async (req, res) => {
 
 
         /* -------------------------- */
-        /* Find ready print cycles */
+        /* Find fulfillment cycles */
         /* -------------------------- */
 
         const {
@@ -63,7 +63,7 @@ module.exports = async (req, res) => {
                     [
                         "ready",
                         "printed",
-                        "shipped"
+                        "fulfilled"
                     ]
                 )
                 .order(
@@ -82,7 +82,7 @@ module.exports = async (req, res) => {
 
 
         /* -------------------------- */
-        /* Build order information */
+        /* Build orders */
         /* -------------------------- */
 
         const orders = [];
@@ -123,7 +123,7 @@ module.exports = async (req, res) => {
 
 
             /* -------------------------- */
-            /* Customer email */
+            /* Customer */
             /* -------------------------- */
 
             const {
@@ -271,10 +271,6 @@ module.exports = async (req, res) => {
 
         }
 
-
-        /* -------------------------- */
-        /* Return orders */
-        /* -------------------------- */
 
         return res.status(200).json({
 
