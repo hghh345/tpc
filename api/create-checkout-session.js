@@ -16,7 +16,7 @@ module.exports = async (req, res) => {
 
 if (!priceId || !email || !photoSessionId) {
                 return res.status(400).json({
-                error: "Missing price or email"
+                error: "Missing price, email or photo session" 
             });
         }
 
