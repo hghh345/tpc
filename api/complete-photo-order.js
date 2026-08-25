@@ -329,14 +329,15 @@ if (totalPrints !== 12) {
                     .from("photos")
                     .insert({
 
-                        user_id:
-                            user.id,
+                    
+            print_cycle_id:
+                printCycle.id,
 
-                        print_cycle_id:
-                            printCycle.id,
+            photo_id:
+                uploadedPhoto.photoRow.id,
 
-                        storage_path:
-                            storagePath
+            quantity:
+                uploadedPhoto.quantity
 
                     })
                     .select()
