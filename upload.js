@@ -36,7 +36,7 @@ const uploadBox =
 
 const DB_NAME = "tiny-photo-club";
 
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 const STORE_NAME = "photos";
 
@@ -57,18 +57,27 @@ function openDatabase() {
             const db = request.result;
 
 
-            if (!db.objectStoreNames.contains(STORE_NAME)) {
+if (!db.objectStoreNames.contains("photos")) {
 
-                db.createObjectStore(
-                    STORE_NAME,
-                    {
-                        keyPath: "id"
-                    }
-                );
+    db.createObjectStore(
+        "photos",
+        {
+            keyPath: "id"
+        }
+    );
 
-            }
+}
 
-        };
+if (!db.objectStoreNames.contains("selection")) {
+
+    db.createObjectStore(
+        "selection",
+        {
+            keyPath: "id"
+        }
+    );
+
+}
 
 
         request.onsuccess = function () {
@@ -204,7 +213,51 @@ async function getPhoto(id) {
     });
 
 }
+async function saveSelection() {
 
+    const db =
+        await openDatabase();
+
+    return new Promise((resolve, reject) => {
+
+        const transaction =
+            db.transaction(
+                "selection",
+                "readwrite"
+            );
+
+        const store =
+            transaction.objectStore(
+                "selection"
+            );
+
+        store.put({
+
+            id: "current",
+
+            photos: selectedPhotos
+
+        });
+
+        transaction.oncomplete =
+            function () {
+
+                resolve();
+
+            };
+
+        transaction.onerror =
+            function () {
+
+                reject(
+                    transaction.error
+                );
+
+            };
+
+    });
+
+}
 
 /* ------------------------------ */
 /* Selected Prints */
@@ -372,6 +425,8 @@ function removePrint(index) {
 /* ------------------------------ */
 
 async function updateUI() {
+
+saveSelection();
 
     counter.textContent =
         `${selectedPhotos.length} / 12`;
