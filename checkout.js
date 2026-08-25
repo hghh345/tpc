@@ -1,3 +1,110 @@
+async function preparePhotoSession() {
+
+    const photoSessionId =
+        crypto.randomUUID();
+
+    return new Promise((resolve, reject) => {
+
+        const request =
+            indexedDB.open(
+                "tiny-photo-club",
+                2
+            );
+
+        request.onsuccess =
+            function () {
+
+                const db =
+                    request.result;
+
+                const transaction =
+                    db.transaction(
+                        "selection",
+                        "readwrite"
+                    );
+
+                const store =
+                    transaction.objectStore(
+                        "selection"
+                    );
+
+                const getRequest =
+                    store.get("current");
+
+                getRequest.onsuccess =
+                    function () {
+
+                        const selection =
+                            getRequest.result;
+
+                        if (
+                            !selection ||
+                            !selection.photos ||
+                            selection.photos.length !== 12
+                        ) {
+
+                            reject(
+                                new Error(
+                                    "Your dozen could not be found."
+                                )
+                            );
+
+                            return;
+
+                        }
+
+                        selection.status =
+                            "checkout";
+
+                        selection.photoSessionId =
+                            photoSessionId;
+
+                        store.put(selection);
+
+                    };
+
+                getRequest.onerror =
+                    function () {
+
+                        reject(
+                            getRequest.error
+                        );
+
+                    };
+
+                transaction.oncomplete =
+                    function () {
+
+                        resolve(
+                            photoSessionId
+                        );
+
+                    };
+
+                transaction.onerror =
+                    function () {
+
+                        reject(
+                            transaction.error
+                        );
+
+                    };
+
+            };
+
+        request.onerror =
+            function () {
+
+                reject(
+                    request.error
+                );
+
+            };
+
+    });
+
+}
+
 const plans = document.querySelectorAll(".plan");
 const price = document.querySelector("#price");
 const emailInput = document.querySelector("#email");
@@ -65,6 +172,9 @@ checkoutButton.addEventListener("click", async () => {
     const selectedPrice =
         selectedPlan.dataset.price;
 
+        const photoSessionId =
+    await preparePhotoSession();
+
 
     /*
        Match selected plan to Stripe Price ID
@@ -112,6 +222,7 @@ checkoutButton.addEventListener("click", async () => {
                 body: JSON.stringify({
                     priceId: priceId,
                     email: email
+                        photoSessionId: photoSessionId
                 })
             }
         );
