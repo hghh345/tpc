@@ -11,95 +11,120 @@ async function preparePhotoSession() {
                 2
             );
 
-        request.onsuccess =
-            function () {
+        request.onerror = function () {
 
-                const db =
-                    request.result;
+            reject(
+                request.error
+            );
 
-                const transaction =
-                    db.transaction(
-                        "selection",
-                        "readwrite"
-                    );
+        };
 
-                const store =
-                    transaction.objectStore(
-                        "selection"
-                    );
 
-                const getRequest =
-                    store.get("current");
+        request.onsuccess = function () {
 
-                getRequest.onsuccess =
-                    function () {
+            const db =
+                request.result;
 
-                        const selection =
-                            getRequest.result;
 
-                        if (
-                            !selection ||
-                            !selection.photos ||
-                            selection.photos.length !== 12
-                        ) {
-
-                            reject(
-                                new Error(
-                                    "Your dozen could not be found."
-                                )
-                            );
-
-                            return;
-
-                        }
-
-                        selection.status =
-                            "checkout";
-
-                        selection.photoSessionId =
-                            photoSessionId;
-
-                        store.put(selection);
-
-                    };
-
-                getRequest.onerror =
-                    function () {
-
-                        reject(
-                            getRequest.error
-                        );
-
-                    };
-
-                transaction.oncomplete =
-                    function () {
-
-                        resolve(
-                            photoSessionId
-                        );
-
-                    };
-
-                transaction.onerror =
-                    function () {
-
-                        reject(
-                            transaction.error
-                        );
-
-                    };
-
-            };
-
-        request.onerror =
-            function () {
+            if (
+                !db.objectStoreNames.contains("selection")
+            ) {
 
                 reject(
-                    request.error
+                    new Error(
+                        "Photo selection storage was not found."
+                    )
                 );
 
-            };
+                return;
+
+            }
+
+
+            const transaction =
+                db.transaction(
+                    "selection",
+                    "readwrite"
+                );
+
+
+            const store =
+                transaction.objectStore(
+                    "selection"
+                );
+
+
+            const getRequest =
+                store.get("current");
+
+
+            getRequest.onsuccess =
+                function () {
+
+                    const selection =
+                        getRequest.result;
+
+
+                    if (
+                        !selection ||
+                        !selection.photos ||
+                        selection.photos.length !== 12
+                    ) {
+
+                        reject(
+                            new Error(
+                                "Your dozen could not be found."
+                            )
+                        );
+
+                        return;
+
+                    }
+
+
+                    selection.status =
+                        "checkout";
+
+
+                    selection.photoSessionId =
+                        photoSessionId;
+
+
+                    store.put(selection);
+
+                };
+
+
+            getRequest.onerror =
+                function () {
+
+                    reject(
+                        getRequest.error
+                    );
+
+                };
+
+
+            transaction.oncomplete =
+                function () {
+
+                    resolve(
+                        photoSessionId
+                    );
+
+                };
+
+
+            transaction.onerror =
+                function () {
+
+                    reject(
+                        transaction.error
+                    );
+
+                };
+
+        };
 
     });
 
