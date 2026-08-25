@@ -18,7 +18,7 @@ async function preparePhotoSession() {
         const request =
             indexedDB.open(
                 "tiny-photo-club",
-                2
+                3
             );
 
 
