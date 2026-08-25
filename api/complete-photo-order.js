@@ -31,9 +31,9 @@ module.exports = async (req, res) => {
         } = req.body;
 
 
-        /*
-           Make sure the browser sent everything.
-        */
+        /* -------------------------- */
+        /* Validate request */
+        /* -------------------------- */
 
         if (
             !sessionId ||
@@ -47,27 +47,43 @@ module.exports = async (req, res) => {
             });
 
         }
-    const totalPrints =
-    photos.reduce(
-        (total, photo) =>
-            total + photo.quantity,
-        0
-    );
-
-
-if (totalPrints !== 12) {
-
-    return res.status(400).json({
-        error: "Exactly 12 prints are required"
-    });
-
-}
 
 
         /*
-           Verify the Stripe payment directly
-           with Stripe.
+           The array contains UNIQUE photos.
+
+           quantity tells us how many physical
+           prints each photo represents.
+
+           Example:
+
+           photo A × 2
+           photo B × 1
+           photo C × 1
+
+           = 4 physical prints
         */
+
+        const totalPrints =
+            photos.reduce(
+                (total, photo) =>
+                    total + Number(photo.quantity || 0),
+                0
+            );
+
+
+        if (totalPrints !== 12) {
+
+            return res.status(400).json({
+                error: "Exactly 12 prints are required"
+            });
+
+        }
+
+
+        /* -------------------------- */
+        /* Verify Stripe payment */
+        /* -------------------------- */
 
         const session =
             await stripe.checkout.sessions.retrieve(
@@ -87,9 +103,8 @@ if (totalPrints !== 12) {
 
 
         /*
-           Make sure the photoSessionId supplied
-           by the browser is the SAME one that
-           Stripe recorded.
+           Make sure this photo session belongs
+           to this Stripe Checkout Session.
         */
 
         if (
@@ -98,15 +113,16 @@ if (totalPrints !== 12) {
         ) {
 
             return res.status(400).json({
-                error: "Photo session does not match payment"
+                error:
+                    "Photo session does not match payment"
             });
 
         }
 
 
-        /*
-           Get customer information from Stripe.
-        */
+        /* -------------------------- */
+        /* Stripe customer information */
+        /* -------------------------- */
 
         const email =
             session.customer_details?.email ||
@@ -124,15 +140,16 @@ if (totalPrints !== 12) {
         if (!email) {
 
             return res.status(400).json({
-                error: "No customer email found"
+                error:
+                    "No customer email found"
             });
 
         }
 
 
-        /*
-           Find the Supabase user.
-        */
+        /* -------------------------- */
+        /* Find Supabase user */
+        /* -------------------------- */
 
         const {
             data: usersData,
@@ -159,15 +176,16 @@ if (totalPrints !== 12) {
         if (!user) {
 
             return res.status(404).json({
-                error: "Supabase user not found"
+                error:
+                    "Supabase user not found"
             });
 
         }
 
 
-        /*
-           Find the customer's active subscription.
-        */
+        /* -------------------------- */
+        /* Find subscription */
+        /* -------------------------- */
 
         const {
             data: subscription,
@@ -176,7 +194,10 @@ if (totalPrints !== 12) {
             await supabase
                 .from("subscriptions")
                 .select("*")
-                .eq("user_id", user.id)
+                .eq(
+                    "user_id",
+                    user.id
+                )
                 .eq(
                     "stripe_subscription_id",
                     stripeSubscriptionId
@@ -191,9 +212,9 @@ if (totalPrints !== 12) {
         }
 
 
-        /*
-           Find the current print cycle.
-        */
+        /* -------------------------- */
+        /* Find print cycle */
+        /* -------------------------- */
 
         const {
             data: printCycle,
@@ -202,12 +223,18 @@ if (totalPrints !== 12) {
             await supabase
                 .from("print_cycles")
                 .select("*")
-                .eq("user_id", user.id)
+                .eq(
+                    "user_id",
+                    user.id
+                )
                 .eq(
                     "subscription_id",
                     subscription.id
                 )
-                .eq("status", "selecting")
+                .eq(
+                    "status",
+                    "selecting"
+                )
                 .order(
                     "cycle_number",
                     {
@@ -225,9 +252,9 @@ if (totalPrints !== 12) {
         }
 
 
-        /*
-           Upload each photo to Supabase Storage.
-        */
+        /* -------------------------- */
+        /* Upload photos */
+        /* -------------------------- */
 
         const uploadedPhotos = [];
 
@@ -242,10 +269,42 @@ if (totalPrints !== 12) {
                 photos[index];
 
 
-            /*
-               Convert the base64 data URL sent
-               by the browser into binary data.
-            */
+            /* -------------------------- */
+            /* Validate photo */
+            /* -------------------------- */
+
+            if (
+                !photo.id ||
+                !photo.data
+            ) {
+
+                throw new Error(
+                    "Invalid photo information"
+                );
+
+            }
+
+
+            const quantity =
+                Number(
+                    photo.quantity || 0
+                );
+
+
+            if (
+                quantity < 1
+            ) {
+
+                throw new Error(
+                    "Invalid photo quantity"
+                );
+
+            }
+
+
+            /* -------------------------- */
+            /* Convert base64 → Buffer */
+            /* -------------------------- */
 
             const matches =
                 photo.data.match(
@@ -277,10 +336,9 @@ if (totalPrints !== 12) {
                 );
 
 
-            /*
-               Give every uploaded file a unique
-               storage path.
-            */
+            /* -------------------------- */
+            /* Storage path */
+            /* -------------------------- */
 
             const extension =
                 contentType.split("/")[1] ||
@@ -290,6 +348,10 @@ if (totalPrints !== 12) {
             const storagePath =
                 `${user.id}/${printCycle.id}/${photo.id}.${extension}`;
 
+
+            /* -------------------------- */
+            /* Upload to Storage */
+            /* -------------------------- */
 
             const {
                 error: uploadError
@@ -317,9 +379,9 @@ if (totalPrints !== 12) {
             }
 
 
-            /*
-               Create the database photo row.
-            */
+            /* -------------------------- */
+            /* Create photos row */
+            /* -------------------------- */
 
             const {
                 data: photoRow,
@@ -329,15 +391,14 @@ if (totalPrints !== 12) {
                     .from("photos")
                     .insert({
 
-                    
-            print_cycle_id:
-                printCycle.id,
+                        user_id:
+                            user.id,
 
-            photo_id:
-                uploadedPhoto.photoRow.id,
+                        print_cycle_id:
+                            printCycle.id,
 
-            quantity:
-                uploadedPhoto.quantity
+                        storage_path:
+                            storagePath
 
                     })
                     .select()
@@ -357,16 +418,16 @@ if (totalPrints !== 12) {
                     photoRow,
 
                 quantity:
-                    photo.quantity
+                    quantity
 
             });
 
         }
 
 
-        /*
-           Create selected_photos rows.
-        */
+        /* -------------------------- */
+        /* Create selected photo rows */
+        /* -------------------------- */
 
         for (
             const uploadedPhoto
@@ -401,10 +462,9 @@ if (totalPrints !== 12) {
         }
 
 
-        /*
-           The customer has successfully
-           completed their dozen.
-        */
+        /* -------------------------- */
+        /* Mark cycle ready */
+        /* -------------------------- */
 
         const {
             error: updateError
@@ -430,13 +490,20 @@ if (totalPrints !== 12) {
         }
 
 
+        /* -------------------------- */
+        /* Success */
+        /* -------------------------- */
+
         return res.status(200).json({
 
             success:
                 true,
 
             photosUploaded:
-                uploadedPhotos.length
+                uploadedPhotos.length,
+
+            totalPrints:
+                totalPrints
 
         });
 
