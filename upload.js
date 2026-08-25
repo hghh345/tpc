@@ -460,35 +460,24 @@ let selectedPhotos = [];
 
 
 /* ------------------------------ */
-/* Add Uploaded File */
+/* Prepare Uploaded Photo */
 /* ------------------------------ */
-async function addUploadedFile(file) {
 
-    if (
-        !file.type.startsWith("image/") &&
-        !file.name.toLowerCase().endsWith(".heic") &&
-        !file.name.toLowerCase().endsWith(".heif")
-    ) {
-
-        return;
-
-    }
-
+async function preparePhoto(file) {
 
     /*
-       HEIC / HEIF photos need to be converted
-       because browsers cannot reliably display
-       them in an <img>.
+       First handle HEIC / HEIF.
     */
-
-    let photoBlob = file;
-
 
     const isHEIC =
         file.type === "image/heic" ||
         file.type === "image/heif" ||
         file.name.toLowerCase().endsWith(".heic") ||
         file.name.toLowerCase().endsWith(".heif");
+
+
+    let sourceBlob =
+        file;
 
 
     if (isHEIC) {
@@ -510,16 +499,10 @@ async function addUploadedFile(file) {
                 });
 
 
-            /*
-               heic2any can return an array
-               or a single Blob.
-            */
-
-            photoBlob =
+            sourceBlob =
                 Array.isArray(converted)
                     ? converted[0]
                     : converted;
-
 
         }
 
@@ -530,22 +513,234 @@ async function addUploadedFile(file) {
                 error
             );
 
-            alert(
-                "this photo couldn't be processed ♡ please try another photo."
+            throw new Error(
+                "HEIC photo could not be converted."
             );
-
-            return;
 
         }
 
     }
 
 
+    /*
+       Load the image so we can resize it.
+    */
+
+    const image =
+        new Image();
+
+
+    const imageUrl =
+        URL.createObjectURL(
+            sourceBlob
+        );
+
+
+    try {
+
+        await new Promise(
+            (resolve, reject) => {
+
+                image.onload =
+                    resolve;
+
+                image.onerror =
+                    reject;
+
+                image.src =
+                    imageUrl;
+
+            }
+        );
+
+
+        /*
+           Keep the original proportions.
+
+           1400px is more than enough for
+           an 8 × 8 cm physical print.
+        */
+
+        const MAX_SIZE =
+            1400;
+
+
+        let width =
+            image.naturalWidth;
+
+
+        let height =
+            image.naturalHeight;
+
+
+        if (
+            width > MAX_SIZE ||
+            height > MAX_SIZE
+        ) {
+
+            const scale =
+                Math.min(
+                    MAX_SIZE / width,
+                    MAX_SIZE / height
+                );
+
+
+            width =
+                Math.round(
+                    width * scale
+                );
+
+
+            height =
+                Math.round(
+                    height * scale
+                );
+
+        }
+
+
+        /*
+           Draw the image into a canvas
+           and create a JPEG Blob.
+        */
+
+        const canvas =
+            document.createElement(
+                "canvas"
+            );
+
+
+        canvas.width =
+            width;
+
+
+        canvas.height =
+            height;
+
+
+        const context =
+            canvas.getContext(
+                "2d"
+            );
+
+
+        context.drawImage(
+            image,
+            0,
+            0,
+            width,
+            height
+        );
+
+
+        const resizedBlob =
+            await new Promise(
+                (resolve, reject) => {
+
+                    canvas.toBlob(
+                        function (blob) {
+
+                            if (!blob) {
+
+                                reject(
+                                    new Error(
+                                        "Could not create photo."
+                                    )
+                                );
+
+                                return;
+
+                            }
+
+
+                            resolve(
+                                blob
+                            );
+
+                        },
+                        "image/jpeg",
+                        0.82
+                    );
+
+                }
+            );
+
+
+        return resizedBlob;
+
+    }
+
+    finally {
+
+        URL.revokeObjectURL(
+            imageUrl
+        );
+
+    }
+
+}
+
+
+/* ------------------------------ */
+/* Add Uploaded File */
+/* ------------------------------ */
+
+async function addUploadedFile(file) {
+
+    if (
+        !file.type.startsWith("image/") &&
+        !file.name.toLowerCase().endsWith(".heic") &&
+        !file.name.toLowerCase().endsWith(".heif")
+    ) {
+
+        return;
+
+    }
+
+
+    let photoBlob;
+
+
+    try {
+
+        photoBlob =
+            await preparePhoto(
+                file
+            );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Photo preparation failed:",
+            error
+        );
+
+
+        alert(
+            "this photo couldn't be processed ♡ please try another photo."
+        );
+
+
+        return;
+
+    }
+
+
+    /*
+       Store the prepared JPEG Blob.
+    */
+
     const id =
         await savePhoto(
             photoBlob
         );
 
+
+    /*
+       Create the photo-bank preview.
+    */
 
     const photo =
         document.createElement(
