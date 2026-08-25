@@ -12,10 +12,10 @@ module.exports = async (req, res) => {
 
     try {
 
-        const { priceId, email } = req.body;
+        const { priceId, email, photoSessionId } = req.body;
 
-        if (!priceId || !email) {
-            return res.status(400).json({
+if (!priceId || !email || !photoSessionId) {
+                return res.status(400).json({
                 error: "Missing price or email"
             });
         }
@@ -52,6 +52,11 @@ module.exports = async (req, res) => {
             mode: "subscription",
 
             customer_email: email,
+
+              metadata: {
+        photoSessionId: photoSessionId
+        },
+
 
             line_items: [
                 {
