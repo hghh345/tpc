@@ -3,88 +3,322 @@
 /* upload.js */
 /* -------------------------------- */
 
+
 /* ------------------------------ */
 /* Elements */
 /* ------------------------------ */
 
-const upload = document.querySelector("#photo-upload");
-const gallery = document.querySelector("#gallery");
-const counter = document.querySelector("#counter");
-const strip = document.querySelector("#selected-strip");
-const complete = document.querySelector("#complete");
-const dozenMessage = document.querySelector("#dozen-message");
-const uploadBox = document.querySelector("#upload-box");
+const upload =
+    document.querySelector("#photo-upload");
+
+const gallery =
+    document.querySelector("#gallery");
+
+const counter =
+    document.querySelector("#counter");
+
+const strip =
+    document.querySelector("#selected-strip");
+
+const complete =
+    document.querySelector("#complete");
+
+const dozenMessage =
+    document.querySelector("#dozen-message");
+
+const uploadBox =
+    document.querySelector("#upload-box");
+
+
+/* ------------------------------ */
+/* IndexedDB */
+/* ------------------------------ */
+
+const DB_NAME = "tiny-photo-club";
+
+const DB_VERSION = 1;
+
+const STORE_NAME = "photos";
+
+
+function openDatabase() {
+
+    return new Promise((resolve, reject) => {
+
+        const request =
+            indexedDB.open(
+                DB_NAME,
+                DB_VERSION
+            );
+
+
+        request.onupgradeneeded = function () {
+
+            const db = request.result;
+
+
+            if (!db.objectStoreNames.contains(STORE_NAME)) {
+
+                db.createObjectStore(
+                    STORE_NAME,
+                    {
+                        keyPath: "id"
+                    }
+                );
+
+            }
+
+        };
+
+
+        request.onsuccess = function () {
+
+            resolve(request.result);
+
+        };
+
+
+        request.onerror = function () {
+
+            reject(request.error);
+
+        };
+
+    });
+
+}
+
+
+/* ------------------------------ */
+/* Save Photo */
+/* ------------------------------ */
+
+async function savePhoto(file) {
+
+    const db =
+        await openDatabase();
+
+
+    const id =
+        crypto.randomUUID();
+
+
+    return new Promise((resolve, reject) => {
+
+        const transaction =
+            db.transaction(
+                STORE_NAME,
+                "readwrite"
+            );
+
+
+        const store =
+            transaction.objectStore(
+                STORE_NAME
+            );
+
+
+        store.put({
+
+            id: id,
+
+            file: file,
+
+            name: file.name,
+
+            type: file.type
+
+        });
+
+
+        transaction.oncomplete =
+            function () {
+
+                resolve(id);
+
+            };
+
+
+        transaction.onerror =
+            function () {
+
+                reject(
+                    transaction.error
+                );
+
+            };
+
+    });
+
+}
+
+
+/* ------------------------------ */
+/* Get Photo */
+/* ------------------------------ */
+
+async function getPhoto(id) {
+
+    const db =
+        await openDatabase();
+
+
+    return new Promise((resolve, reject) => {
+
+        const transaction =
+            db.transaction(
+                STORE_NAME,
+                "readonly"
+            );
+
+
+        const store =
+            transaction.objectStore(
+                STORE_NAME
+            );
+
+
+        const request =
+            store.get(id);
+
+
+        request.onsuccess =
+            function () {
+
+                resolve(
+                    request.result
+                );
+
+            };
+
+
+        request.onerror =
+            function () {
+
+                reject(
+                    request.error
+                );
+
+            };
+
+    });
+
+}
 
 
 /* ------------------------------ */
 /* Selected Prints */
 /* ------------------------------ */
 
-/*
-   Each item represents ONE physical print.
+let selectedPhotos = [];
 
-   The same photo can therefore appear more than once:
+
+/*
+   Each item is a photo ID.
+
+   The same ID can appear more than once.
+
+   Example:
 
    photo A
    photo A
    photo B
 
-   = 3 prints
+   = 3 physical prints
 */
 
-let selectedPhotos = [];
+
+/* ------------------------------ */
+/* Add Uploaded File */
+/* ------------------------------ */
+
+async function addUploadedFile(file) {
+
+    if (!file.type.startsWith("image/")) {
+
+        return;
+
+    }
+
+
+    const id =
+        await savePhoto(file);
+
+
+    const photo =
+        document.createElement("div");
+
+
+    photo.className =
+        "photo";
+
+
+    const image =
+        document.createElement("img");
+
+
+    image.src =
+        URL.createObjectURL(file);
+
+
+    image.alt =
+        "uploaded photo";
+
+
+    photo.appendChild(image);
+
+
+    photo.dataset.id =
+        id;
+
+
+    photo.addEventListener(
+        "click",
+        function (event) {
+
+            event.preventDefault();
+
+            event.stopPropagation();
+
+            addPrint(photo);
+
+        }
+    );
+
+
+    gallery.appendChild(photo);
+
+}
 
 
 /* ------------------------------ */
 /* Upload Photos */
 /* ------------------------------ */
 
-upload.addEventListener("change", function (event) {
+upload.addEventListener(
+    "change",
+    async function (event) {
 
-    const files = [...event.target.files];
+        const files =
+            [...event.target.files];
 
-    files.forEach(file => {
 
-        if (!file.type.startsWith("image/")) return;
+        for (const file of files) {
 
-        const reader = new FileReader();
+            await addUploadedFile(file);
 
-        reader.onload = function (e) {
+        }
 
-            const photo = document.createElement("div");
 
-            photo.className = "photo";
+        /*
+           Reset input so the same file
+           can be selected again.
+        */
 
-            photo.innerHTML = `
-                <img src="${e.target.result}" alt="uploaded photo">
-            `;
+        upload.value = "";
 
-            photo.dataset.src = e.target.result;
-
-           photo.addEventListener("click", (event) => {
-
-             event.preventDefault();
-             event.stopPropagation();
-
-            addPrint(photo);
-
-         });
-            gallery.appendChild(photo);
-
-        };
-
-        reader.readAsDataURL(file);
-
-    });
-
-    /*
-       Reset the input so the same file can be
-       selected again from the file picker.
-    */
-
-    upload.value = "";
-
-});
+    }
+);
 
 
 /* ------------------------------ */
@@ -93,7 +327,9 @@ upload.addEventListener("change", function (event) {
 
 function addPrint(photo) {
 
-    if (selectedPhotos.length >= 12) {
+    if (
+        selectedPhotos.length >= 12
+    ) {
 
         showFullMessage();
 
@@ -101,9 +337,13 @@ function addPrint(photo) {
 
     }
 
-    const src = photo.dataset.src;
 
-    selectedPhotos.push(src);
+    const id =
+        photo.dataset.id;
+
+
+    selectedPhotos.push(id);
+
 
     updateUI();
 
@@ -116,7 +356,11 @@ function addPrint(photo) {
 
 function removePrint(index) {
 
-    selectedPhotos.splice(index, 1);
+    selectedPhotos.splice(
+        index,
+        1
+    );
+
 
     updateUI();
 
@@ -127,73 +371,113 @@ function removePrint(index) {
 /* Update Everything */
 /* ------------------------------ */
 
-function updateUI() {
-
-    /*
-       Update counter
-    */
+async function updateUI() {
 
     counter.textContent =
         `${selectedPhotos.length} / 12`;
 
 
-    /*
-       Clear selected strip
-    */
-
     strip.innerHTML = "";
 
 
-    /*
-       Create one slot for every physical print
-    */
+    for (
+        let index = 0;
+        index < selectedPhotos.length;
+        index++
+    ) {
 
-    selectedPhotos.forEach((src, index) => {
+        const id =
+            selectedPhotos[index];
 
-        const slot = document.createElement("div");
 
-        slot.className = "slot";
+        const storedPhoto =
+            await getPhoto(id);
 
-        slot.innerHTML = `
-            <img
-                src="${src}"
-                alt="selected print ${index + 1}"
-            >
 
-            <button
-                class="remove-print"
-                type="button"
-                aria-label="remove print"
-            >
-                ×
-            </button>
-        `;
+        if (!storedPhoto) {
+
+            continue;
+
+        }
+
+
+        const slot =
+            document.createElement("div");
+
+
+        slot.className =
+            "slot";
+
+
+        const image =
+            document.createElement("img");
+
+
+        image.src =
+            URL.createObjectURL(
+                storedPhoto.file
+            );
+
+
+        image.alt =
+            `selected print ${index + 1}`;
+
 
         const removeButton =
-            slot.querySelector(".remove-print");
+            document.createElement("button");
 
-        removeButton.addEventListener("click", (event) => {
 
-            event.stopPropagation();
+        removeButton.className =
+            "remove-print";
 
-            removePrint(index);
 
-        });
+        removeButton.type =
+            "button";
+
+
+        removeButton.setAttribute(
+            "aria-label",
+            "remove print"
+        );
+
+
+        removeButton.textContent =
+            "×";
+
+
+        removeButton.addEventListener(
+            "click",
+            function (event) {
+
+                event.stopPropagation();
+
+                removePrint(index);
+
+            }
+        );
+
+
+        slot.appendChild(image);
+
+        slot.appendChild(
+            removeButton
+        );
+
 
         strip.appendChild(slot);
 
-    });
+    }
 
 
-    /*
-       Dozen is full
-    */
-
-    if (selectedPhotos.length === 12) {
+    if (
+        selectedPhotos.length === 12
+    ) {
 
         showFullMessage();
 
-        complete.classList.add("show");
+        complete.classList.add(
+            "show"
+        );
 
     }
 
@@ -201,11 +485,15 @@ function updateUI() {
 
         if (dozenMessage) {
 
-            dozenMessage.textContent = "";
+            dozenMessage.textContent =
+                "";
 
         }
 
-        complete.classList.remove("show");
+
+        complete.classList.remove(
+            "show"
+        );
 
     }
 
@@ -218,7 +506,12 @@ function updateUI() {
 
 function showFullMessage() {
 
-    if (!dozenMessage) return;
+    if (!dozenMessage) {
+
+        return;
+
+    }
+
 
     dozenMessage.textContent =
         "your dozen is full ♡ ↓ scroll down to keep going";
@@ -230,69 +523,52 @@ function showFullMessage() {
 /* Drag & Drop */
 /* ------------------------------ */
 
-uploadBox.addEventListener("dragover", (e) => {
+uploadBox.addEventListener(
+    "dragover",
+    function (e) {
 
-    e.preventDefault();
+        e.preventDefault();
 
-    uploadBox.style.background = "#f5f5f5";
+        uploadBox.style.background =
+            "#f5f5f5";
 
-});
-
-
-uploadBox.addEventListener("dragleave", () => {
-
-    uploadBox.style.background = "white";
-
-});
+    }
+);
 
 
-uploadBox.addEventListener("drop", (e) => {
+uploadBox.addEventListener(
+    "dragleave",
+    function () {
 
-    e.preventDefault();
+        uploadBox.style.background =
+            "white";
 
-    uploadBox.style.background = "white";
+    }
+);
 
-    const files = [...e.dataTransfer.files];
 
-    files.forEach(file => {
+uploadBox.addEventListener(
+    "drop",
+    async function (e) {
 
-        if (!file.type.startsWith("image/")) return;
+        e.preventDefault();
 
-        const reader = new FileReader();
+        uploadBox.style.background =
+            "white";
 
-        reader.onload = function (event) {
 
-            const photo = document.createElement("div");
+        const files =
+            [...e.dataTransfer.files];
 
-            photo.className = "photo";
 
-            photo.innerHTML = `
-                <img
-                    src="${event.target.result}"
-                    alt="uploaded photo"
-                >
-            `;
+        for (const file of files) {
 
-            photo.dataset.src = event.target.result;
+            await addUploadedFile(file);
 
-           photo.addEventListener("click", (event) => {
+        }
 
-          event.preventDefault();
-          event.stopPropagation();
-
-          addPrint(photo);
-
-        });
-
-            gallery.appendChild(photo);
-
-        };
-
-        reader.readAsDataURL(file);
-
-    });
-
-});
+    }
+);
 
 
 /* -------------------------- */
@@ -314,31 +590,43 @@ const printImages = [
     "i11.JPG",
     "i12.JPG"
 
-].sort(() => Math.random() - 0.5);
+].sort(
+    () => Math.random() - 0.5
+);
 
 
 let printIndex = 0;
 
 
 const printSlide =
-    document.querySelector("#print-slideshow");
+    document.querySelector(
+        "#print-slideshow"
+    );
 
 
 if (printSlide) {
 
-    setInterval(() => {
+    setInterval(
+        function () {
 
-        printIndex++;
+            printIndex++;
 
-        if (printIndex >= printImages.length) {
 
-            printIndex = 0;
+            if (
+                printIndex >=
+                printImages.length
+            ) {
 
-        }
+                printIndex = 0;
 
-        printSlide.src =
-            printImages[printIndex];
+            }
 
-    }, 500);
+
+            printSlide.src =
+                printImages[printIndex];
+
+        },
+        500
+    );
 
 }
