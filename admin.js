@@ -189,60 +189,53 @@ function renderOrder(order) {
         "admin-photo-grid";
 
 
+    /*
+       Create one physical slot for
+       every print.
+
+       If quantity = 2,
+       the photo appears twice.
+    */
+
     order.photos.forEach(
         photo => {
 
-            const wrapper =
-                document.createElement("div");
-
-
-            wrapper.className =
-                "admin-photo";
-
-
-            const image =
-                document.createElement("img");
-
-
-            image.src =
-                photo.url;
-
-
-            image.alt =
-                "customer photo";
-
-
-            wrapper.appendChild(
-                image
-            );
-
-
-            if (
-                photo.quantity > 1
+            for (
+                let i = 0;
+                i < photo.quantity;
+                i++
             ) {
 
-                const quantity =
+                const wrapper =
                     document.createElement("div");
 
 
-                quantity.className =
-                    "photo-quantity";
+                wrapper.className =
+                    "admin-photo";
 
 
-                quantity.textContent =
-                    `×${photo.quantity}`;
+                const image =
+                    document.createElement("img");
+
+
+                image.src =
+                    photo.url;
+
+
+                image.alt =
+                    "customer print";
 
 
                 wrapper.appendChild(
-                    quantity
+                    image
+                );
+
+
+                photoGrid.appendChild(
+                    wrapper
                 );
 
             }
-
-
-            photoGrid.appendChild(
-                wrapper
-            );
 
         }
     );
@@ -252,9 +245,11 @@ function renderOrder(order) {
         heading
     );
 
+
     article.appendChild(
         details
     );
+
 
     article.appendChild(
         photoGrid
