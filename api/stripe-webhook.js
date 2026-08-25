@@ -18,12 +18,6 @@ module.exports = async (req, res) => {
 
         const signature = req.headers["stripe-signature"];
 
-        /*
-           Get the raw request body.
-           Stripe requires the original body for
-           webhook signature verification.
-        */
-
         const rawBody = await getRawBody(req);
 
         const event = stripe.webhooks.constructEvent(
@@ -35,9 +29,9 @@ module.exports = async (req, res) => {
         console.log("Stripe event:", event.type);
 
 
-        /*
-           Successful Checkout
-        */
+        /* -------------------------------- */
+        /* CHECKOUT COMPLETED */
+        /* -------------------------------- */
 
         if (event.type === "checkout.session.completed") {
 
@@ -47,15 +41,25 @@ module.exports = async (req, res) => {
                 session.customer_details?.email ||
                 session.customer_email;
 
-            console.log(
-                "Successful checkout:",
-                email
-            );
+            const stripeCustomerId =
+                session.customer;
+
+            const stripeSubscriptionId =
+                session.subscription;
+
+            const plan =
+                session.metadata?.plan;
 
 
-            /*
-               Create Supabase user
-            */
+            console.log("Successful checkout:", email);
+            console.log("Stripe customer:", stripeCustomerId);
+            console.log("Stripe subscription:", stripeSubscriptionId);
+            console.log("Plan:", plan);
+
+
+            /* -------------------------------- */
+            /* CREATE SUPABASE USER */
+            /* -------------------------------- */
 
             const {
                 data: userData,
@@ -69,23 +73,145 @@ module.exports = async (req, res) => {
             });
 
 
+            /*
+               If the user already exists because Stripe
+               retried the webhook, find the existing user.
+            */
+
+            let userId;
+
             if (userError) {
 
-                console.error(
-                    "Supabase user error:",
-                    userError
-                );
+                if (
+                    userError.message &&
+                    userError.message.toLowerCase().includes("already")
+                ) {
 
-                return res.status(500).json({
-                    error: "Could not create user"
-                });
+                    const {
+                        data: usersData,
+                        error: listError
+                    } = await supabase.auth.admin.listUsers();
+
+                    if (listError) {
+                        throw listError;
+                    }
+
+                    const existingUser =
+                        usersData.users.find(
+                            user => user.email === email
+                        );
+
+                    if (!existingUser) {
+                        throw userError;
+                    }
+
+                    userId = existingUser.id;
+
+                } else {
+
+                    throw userError;
+
+                }
+
+            } else {
+
+                userId = userData.user.id;
 
             }
 
 
             console.log(
-                "Created Supabase user:",
-                userData.user.id
+                "Supabase user:",
+                userId
+            );
+
+
+            /* -------------------------------- */
+            /* CREATE SUBSCRIPTION */
+            /* -------------------------------- */
+
+            const {
+                data: subscriptionData,
+                error: subscriptionError
+            } = await supabase
+                .from("subscriptions")
+                .insert({
+
+                    user_id: userId,
+
+                    stripe_customer_id:
+                        stripeCustomerId,
+
+                    stripe_subscription_id:
+                        stripeSubscriptionId,
+
+                    plan: plan,
+
+                    status: "active"
+
+                })
+                .select()
+                .single();
+
+
+            if (subscriptionError) {
+
+                console.error(
+                    "Subscription error:",
+                    subscriptionError
+                );
+
+                throw subscriptionError;
+
+            }
+
+
+            console.log(
+                "Created subscription:",
+                subscriptionData.id
+            );
+
+
+            /* -------------------------------- */
+            /* CREATE FIRST PRINT CYCLE */
+            /* -------------------------------- */
+
+            const {
+                data: cycleData,
+                error: cycleError
+            } = await supabase
+                .from("print_cycles")
+                .insert({
+
+                    user_id: userId,
+
+                    subscription_id:
+                        subscriptionData.id,
+
+                    cycle_number: 1,
+
+                    status: "open"
+
+                })
+                .select()
+                .single();
+
+
+            if (cycleError) {
+
+                console.error(
+                    "Print cycle error:",
+                    cycleError
+                );
+
+                throw cycleError;
+
+            }
+
+
+            console.log(
+                "Created print cycle:",
+                cycleData.id
             );
 
         }
@@ -112,9 +238,9 @@ module.exports = async (req, res) => {
 };
 
 
-/*
-   Read the raw request body.
-*/
+/* -------------------------------- */
+/* RAW REQUEST BODY */
+/* -------------------------------- */
 
 function getRawBody(req) {
 
@@ -146,10 +272,6 @@ function getRawBody(req) {
 
 }
 
-
-/*
-   Disable Vercel's automatic JSON body parsing.
-*/
 
 module.exports.config = {
 
