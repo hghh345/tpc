@@ -8,161 +8,58 @@ const supabase = createClient(
     process.env.SUPABASE_SECRET_KEY
 );
 
-
 module.exports = async (req, res) => {
 
     if (req.method !== "POST") {
         return res.status(405).send("Method not allowed");
     }
 
-
     try {
 
-        const signature =
-            req.headers["stripe-signature"];
-
+        const signature = req.headers["stripe-signature"];
 
         /*
-           Verify that this request actually came
-           from Stripe.
+           Get the raw request body.
+           Stripe requires the original body for
+           webhook signature verification.
         */
 
-        const event =
-            stripe.webhooks.constructEvent(
-                req.body,
-                signature,
-                process.env.STRIPE_WEBHOOK_SECRET
-            );
+        const rawBody = await getRawBody(req);
 
-
-        console.log(
-            "Stripe event:",
-            event.type
+        const event = stripe.webhooks.constructEvent(
+            rawBody,
+            signature,
+            process.env.STRIPE_WEBHOOK_SECRET
         );
 
-
-        /*
-           We only care about completed Checkout
-           sessions for now.
-        */
-
-        if (event.type !== "checkout.session.completed") {
-
-            return res.status(200).json({
-                received: true
-            });
-
-        }
-
-
-        const session = event.data.object;
+        console.log("Stripe event:", event.type);
 
 
         /*
-           Get customer information from Stripe.
+           Successful Checkout
         */
 
-        const email =
-            session.customer_details?.email ||
-            session.customer_email;
+        if (event.type === "checkout.session.completed") {
 
-        const stripeCustomerId =
-            session.customer;
+            const session = event.data.object;
 
-        const stripeSubscriptionId =
-            session.subscription;
+            const email =
+                session.customer_details?.email ||
+                session.customer_email;
 
-
-        if (!email) {
-
-            console.error(
-                "No customer email found."
-            );
-
-            return res.status(400).json({
-                error: "No customer email"
-            });
-
-        }
-
-
-        /*
-           Get our Tiny Photo Club plan.
-        */
-
-        const plan =
-            session.metadata?.plan;
-
-
-        if (!plan) {
-
-            console.error(
-                "No plan found in Stripe metadata."
-            );
-
-            return res.status(400).json({
-                error: "No plan"
-            });
-
-        }
-
-
-        console.log(
-            "Customer:",
-            email
-        );
-
-        console.log(
-            "Plan:",
-            plan
-        );
-
-
-        /*
-           Try to find the Supabase user first.
-        */
-
-        const {
-            data: usersData,
-            error: usersError
-        } = await supabase.auth.admin.listUsers({
-            page: 1,
-            perPage: 1000
-        });
-
-
-        if (usersError) {
-
-            console.error(
-                "Could not retrieve users:",
-                usersError
-            );
-
-            return res.status(500).json({
-                error: "Could not retrieve users"
-            });
-
-        }
-
-
-        let user =
-            usersData.users.find(
-                existingUser =>
-                    existingUser.email?.toLowerCase() ===
-                    email.toLowerCase()
+            console.log(
+                "Successful checkout:",
+                email
             );
 
 
-        /*
-           If this customer doesn't have a
-           Supabase account yet, create one.
-        */
-
-        if (!user) {
+            /*
+               Create Supabase user
+            */
 
             const {
-                data: newUserData,
-                error: newUserError
+                data: userData,
+                error: userError
             } = await supabase.auth.admin.createUser({
 
                 email: email,
@@ -172,11 +69,11 @@ module.exports = async (req, res) => {
             });
 
 
-            if (newUserError) {
+            if (userError) {
 
                 console.error(
-                    "Could not create user:",
-                    newUserError
+                    "Supabase user error:",
+                    userError
                 );
 
                 return res.status(500).json({
@@ -185,121 +82,21 @@ module.exports = async (req, res) => {
 
             }
 
-            user = newUserData.user;
 
-        }
-
-
-        const userId = user.id;
-
-
-        console.log(
-            "Supabase user:",
-            userId
-        );
-
-
-        /*
-           Create the subscription record.
-        */
-
-        const {
-            data: subscriptionData,
-            error: subscriptionError
-        } = await supabase
-            .from("subscriptions")
-            .insert({
-
-                user_id: userId,
-
-                stripe_customer_id:
-                    stripeCustomerId,
-
-                stripe_subscription_id:
-                    stripeSubscriptionId,
-
-                plan: plan,
-
-                status: "active"
-
-            })
-            .select()
-            .single();
-
-
-        if (subscriptionError) {
-
-            console.error(
-                "Subscription error:",
-                subscriptionError
+            console.log(
+                "Created Supabase user:",
+                userData.user.id
             );
 
-            return res.status(500).json({
-                error: "Could not create subscription"
-            });
-
         }
-
-
-        console.log(
-            "Subscription created:",
-            subscriptionData.id
-        );
-
-
-        /*
-           Create the customer's first print cycle.
-        */
-
-        const {
-            data: cycleData,
-            error: cycleError
-        } = await supabase
-            .from("print_cycles")
-            .insert({
-
-                user_id: userId,
-
-                subscription_id:
-                    subscriptionData.id,
-
-                cycle_number: 1,
-
-                status: "pending"
-
-            })
-            .select()
-            .single();
-
-
-        if (cycleError) {
-
-            console.error(
-                "Print cycle error:",
-                cycleError
-            );
-
-            return res.status(500).json({
-                error: "Could not create print cycle"
-            });
-
-        }
-
-
-        console.log(
-            "Print cycle created:",
-            cycleData.id
-        );
 
 
         return res.status(200).json({
             received: true
         });
 
-    }
 
-
-    catch (error) {
+    } catch (error) {
 
         console.error(
             "Webhook error:",
@@ -316,8 +113,42 @@ module.exports = async (req, res) => {
 
 
 /*
-   Stripe requires the raw request body
-   for signature verification.
+   Read the raw request body.
+*/
+
+function getRawBody(req) {
+
+    return new Promise((resolve, reject) => {
+
+        const chunks = [];
+
+        req.on("data", chunk => {
+
+            chunks.push(
+                Buffer.isBuffer(chunk)
+                    ? chunk
+                    : Buffer.from(chunk)
+            );
+
+        });
+
+        req.on("end", () => {
+
+            resolve(
+                Buffer.concat(chunks)
+            );
+
+        });
+
+        req.on("error", reject);
+
+    });
+
+}
+
+
+/*
+   Disable Vercel's automatic JSON body parsing.
 */
 
 module.exports.config = {
