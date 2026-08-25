@@ -79,6 +79,7 @@ if (!db.objectStoreNames.contains("selection")) {
 
 }
 
+};
 
         request.onsuccess = function () {
 
