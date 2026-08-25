@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>admin • tiny photo club</title>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<main class="admin">
+
+<h1>
+    tiny photo club
+</h1>
+
+<p>
+    fulfillment
+</p>
+
+
+<section id="login">
+
+    <input
+        type="password"
+        id="admin-password"
+        placeholder="password"
+        autocomplete="current-password"
+    >
+
+    <button
+        id="login-button"
+        type="button">
+
+        enter →
+
+    </button>
+
+    <p id="login-error"></p>
+
+</section>
+
+
+<section
+    id="orders"
+    style="display:none;">
+
+    <h2>
+        orders
+    </h2>
+
+    <div id="order-list"></div>
+
+</section>
+
+
+</main>
+
+
+<script src="admin.js"></script>
+
+</body>
+
+</html>
