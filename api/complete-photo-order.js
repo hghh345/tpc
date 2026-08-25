@@ -296,7 +296,7 @@ if (totalPrints !== 12) {
             } =
                 await supabase
                     .storage
-                    .from("customer photos")
+                    .from("customer-photos")
                     .upload(
                         storagePath,
                         buffer,
