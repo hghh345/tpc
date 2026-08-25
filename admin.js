@@ -17,6 +17,9 @@ const loginError =
     document.querySelector("#login-error");
 
 
+let adminPassword = "";
+
+
 loginButton.addEventListener(
     "click",
     loadOrders
@@ -36,6 +39,10 @@ passwordInput.addEventListener(
     }
 );
 
+
+/* -------------------------- */
+/* LOAD ORDERS */
+/* -------------------------- */
 
 async function loadOrders() {
 
@@ -59,7 +66,6 @@ async function loadOrders() {
     loginButton.textContent =
         "loading...";
 
-
     loginError.textContent =
         "";
 
@@ -70,6 +76,7 @@ async function loadOrders() {
             await fetch(
                 "/api/admin-orders",
                 {
+
                     method: "POST",
 
                     headers: {
@@ -99,6 +106,15 @@ async function loadOrders() {
             );
 
         }
+
+
+        /*
+           Keep the password in memory
+           so the buttons can use it.
+        */
+
+        adminPassword =
+            password;
 
 
         loginSection.style.display =
@@ -133,9 +149,16 @@ async function loadOrders() {
 }
 
 
-function renderOrders(orders) {
+/* -------------------------- */
+/* RENDER ORDERS */
+/* -------------------------- */
 
-    orderList.innerHTML = "";
+function renderOrders(
+    orders
+) {
+
+    orderList.innerHTML =
+        "";
 
 
     if (!orders.length) {
@@ -155,7 +178,13 @@ function renderOrders(orders) {
 }
 
 
-function renderOrder(order) {
+/* -------------------------- */
+/* RENDER ONE ORDER */
+/* -------------------------- */
+
+function renderOrder(
+    order
+) {
 
     const article =
         document.createElement("article");
@@ -165,6 +194,10 @@ function renderOrder(order) {
         "admin-order";
 
 
+    /* -------------------------- */
+    /* Customer */
+    /* -------------------------- */
+
     const heading =
         document.createElement("h3");
 
@@ -173,13 +206,37 @@ function renderOrder(order) {
         order.email;
 
 
+    /* -------------------------- */
+    /* Details */
+    /* -------------------------- */
+
     const details =
         document.createElement("p");
 
 
     details.textContent =
-        `${order.plan} · cycle #${order.cycleNumber} · ${order.status}`;
+        `${order.plan} · cycle #${order.cycleNumber}`;
 
+
+    /* -------------------------- */
+    /* Status */
+    /* -------------------------- */
+
+    const status =
+        document.createElement("p");
+
+
+    status.textContent =
+        `status: ${order.status}`;
+
+
+    status.className =
+        "admin-status";
+
+
+    /* -------------------------- */
+    /* Photos */
+    /* -------------------------- */
 
     const photoGrid =
         document.createElement("div");
@@ -190,11 +247,11 @@ function renderOrder(order) {
 
 
     /*
-       Create one physical slot for
-       every print.
+       Create one physical slot
+       for every print.
 
-       If quantity = 2,
-       the photo appears twice.
+       Quantity 2 means the same
+       image appears twice.
     */
 
     order.photos.forEach(
@@ -241,23 +298,399 @@ function renderOrder(order) {
     );
 
 
+    /* -------------------------- */
+    /* Actions */
+    /* -------------------------- */
+
+    const actions =
+        document.createElement("div");
+
+
+    actions.className =
+        "admin-actions";
+
+
+    /*
+       READY
+    */
+
+    if (
+        order.status ===
+        "ready"
+    ) {
+
+        const generateButton =
+            document.createElement("button");
+
+
+        generateButton.type =
+            "button";
+
+
+        generateButton.textContent =
+            "generate print sheet →";
+
+
+        generateButton.addEventListener(
+            "click",
+            function () {
+
+                generatePrintSheet(
+                    order.printCycleId
+                );
+
+            }
+        );
+
+
+        actions.appendChild(
+            generateButton
+        );
+
+
+        const printedButton =
+            document.createElement("button");
+
+
+        printedButton.type =
+            "button";
+
+
+        printedButton.textContent =
+            "mark printed";
+
+
+        printedButton.addEventListener(
+            "click",
+            function () {
+
+                updateStatus(
+                    order.printCycleId,
+                    "printed"
+                );
+
+            }
+        );
+
+
+        actions.appendChild(
+            printedButton
+        );
+
+    }
+
+
+    /*
+       PRINTED
+    */
+
+    if (
+        order.status ===
+        "printed"
+    ) {
+
+        const fulfilledButton =
+            document.createElement("button");
+
+
+        fulfilledButton.type =
+            "button";
+
+
+        fulfilledButton.textContent =
+            "mark fulfilled";
+
+
+        fulfilledButton.addEventListener(
+            "click",
+            function () {
+
+                updateStatus(
+                    order.printCycleId,
+                    "fulfilled"
+                );
+
+            }
+        );
+
+
+        actions.appendChild(
+            fulfilledButton
+        );
+
+    }
+
+
+    /* -------------------------- */
+    /* Add everything */
+    /* -------------------------- */
+
     article.appendChild(
         heading
     );
-
 
     article.appendChild(
         details
     );
 
+    article.appendChild(
+        status
+    );
 
     article.appendChild(
         photoGrid
     );
 
+    article.appendChild(
+        actions
+    );
+
 
     orderList.appendChild(
         article
+    );
+
+}
+
+
+/* -------------------------- */
+/* GENERATE PRINT SHEET */
+/* -------------------------- */
+
+async function generatePrintSheet(
+    printCycleId
+) {
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/generate-print-sheet",
+                {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+
+                            password:
+                                adminPassword,
+
+                            printCycleId:
+                                printCycleId
+
+                        })
+
+                }
+            );
+
+
+        if (!response.ok) {
+
+            let message =
+                "Unable to generate print sheet";
+
+
+            try {
+
+                const data =
+                    await response.json();
+
+                message =
+                    data.error ||
+                    message;
+
+            }
+
+            catch (error) {}
+
+            
+            throw new Error(
+                message
+            );
+
+        }
+
+
+        const blob =
+            await response.blob();
+
+
+        const url =
+            URL.createObjectURL(
+                blob
+            );
+
+
+        window.open(
+            url,
+            "_blank"
+        );
+
+    }
+
+
+    catch (error) {
+
+        console.error(
+            error
+        );
+
+        alert(
+            error.message
+        );
+
+    }
+
+}
+
+
+/* -------------------------- */
+/* UPDATE STATUS */
+/* -------------------------- */
+
+async function updateStatus(
+    printCycleId,
+    newStatus
+) {
+
+    const message =
+        newStatus === "printed"
+            ? "mark this order as printed?"
+            : "mark this order as fulfilled?";
+
+
+    if (
+        !confirm(message)
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/update-print-cycle",
+                {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+
+                            password:
+                                adminPassword,
+
+                            printCycleId:
+                                printCycleId,
+
+                            status:
+                                newStatus
+
+                        })
+
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.error ||
+                "Unable to update order"
+            );
+
+        }
+
+
+        /*
+           Reload the orders so
+           the buttons update.
+        */
+
+        await reloadOrders();
+
+    }
+
+
+    catch (error) {
+
+        console.error(
+            error
+        );
+
+        alert(
+            error.message
+        );
+
+    }
+
+}
+
+
+/* -------------------------- */
+/* RELOAD ORDERS */
+/* -------------------------- */
+
+async function reloadOrders() {
+
+    const response =
+        await fetch(
+            "/api/admin-orders",
+            {
+
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body:
+                    JSON.stringify({
+
+                        password:
+                            adminPassword
+
+                    })
+
+            }
+        );
+
+
+    const data =
+        await response.json();
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            data.error ||
+            "Unable to reload orders"
+        );
+
+    }
+
+
+    renderOrders(
+        data.orders
     );
 
 }
