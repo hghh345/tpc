@@ -34,11 +34,14 @@ const uploadBox =
 /* IndexedDB */
 /* ------------------------------ */
 
-const DB_NAME = "tiny-photo-club";
+const DB_NAME =
+    "tiny-photo-club";
 
-const DB_VERSION = 2;
+const DB_VERSION =
+    3;
 
-const STORE_NAME = "photos";
+const STORE_NAME =
+    "photos";
 
 
 function openDatabase() {
@@ -52,47 +55,75 @@ function openDatabase() {
             );
 
 
-        request.onupgradeneeded = function () {
+        request.onupgradeneeded =
+            function () {
 
-            const db = request.result;
-
-
-if (!db.objectStoreNames.contains("photos")) {
-
-    db.createObjectStore(
-        "photos",
-        {
-            keyPath: "id"
-        }
-    );
-
-}
-
-if (!db.objectStoreNames.contains("selection")) {
-
-    db.createObjectStore(
-        "selection",
-        {
-            keyPath: "id"
-        }
-    );
-
-}
-
-};
-
-        request.onsuccess = function () {
-
-            resolve(request.result);
-
-        };
+                const db =
+                    request.result;
 
 
-        request.onerror = function () {
+                /* -------------------------- */
+                /* Photos */
+                /* -------------------------- */
 
-            reject(request.error);
+                if (
+                    !db.objectStoreNames.contains(
+                        "photos"
+                    )
+                ) {
 
-        };
+                    db.createObjectStore(
+                        "photos",
+                        {
+                            keyPath:
+                                "id"
+                        }
+                    );
+
+                }
+
+
+                /* -------------------------- */
+                /* Selection */
+                /* -------------------------- */
+
+                if (
+                    !db.objectStoreNames.contains(
+                        "selection"
+                    )
+                ) {
+
+                    db.createObjectStore(
+                        "selection",
+                        {
+                            keyPath:
+                                "id"
+                        }
+                    );
+
+                }
+
+            };
+
+
+        request.onsuccess =
+            function () {
+
+                resolve(
+                    request.result
+                );
+
+            };
+
+
+        request.onerror =
+            function () {
+
+                reject(
+                    request.error
+                );
+
+            };
 
     });
 
@@ -113,52 +144,68 @@ async function savePhoto(file) {
         crypto.randomUUID();
 
 
-    return new Promise((resolve, reject) => {
+    return new Promise(
+        (resolve, reject) => {
 
-        const transaction =
-            db.transaction(
-                STORE_NAME,
-                "readwrite"
-            );
-
-
-        const store =
-            transaction.objectStore(
-                STORE_NAME
-            );
-
-
-        store.put({
-
-            id: id,
-
-            file: file,
-
-            name: file.name,
-
-            type: file.type
-
-        });
-
-
-        transaction.oncomplete =
-            function () {
-
-                resolve(id);
-
-            };
-
-
-        transaction.onerror =
-            function () {
-
-                reject(
-                    transaction.error
+            const transaction =
+                db.transaction(
+                    STORE_NAME,
+                    "readwrite"
                 );
 
-            };
 
-    });
+            const store =
+                transaction.objectStore(
+                    STORE_NAME
+                );
+
+
+            /*
+               Store the actual Blob instead
+               of relying on a Blob URL.
+
+               This is safer across Safari,
+               Chrome, and mobile browsers.
+            */
+
+            store.put({
+
+                id:
+                    id,
+
+                blob:
+                    file,
+
+                name:
+                    file.name,
+
+                type:
+                    file.type
+
+            });
+
+
+            transaction.oncomplete =
+                function () {
+
+                    resolve(
+                        id
+                    );
+
+                };
+
+
+            transaction.onerror =
+                function () {
+
+                    reject(
+                        transaction.error
+                    );
+
+                };
+
+        }
+    );
 
 }
 
@@ -173,179 +220,222 @@ async function getPhoto(id) {
         await openDatabase();
 
 
-    return new Promise((resolve, reject) => {
+    return new Promise(
+        (resolve, reject) => {
 
-        const transaction =
-            db.transaction(
-                STORE_NAME,
-                "readonly"
-            );
-
-
-        const store =
-            transaction.objectStore(
-                STORE_NAME
-            );
-
-
-        const request =
-            store.get(id);
-
-
-        request.onsuccess =
-            function () {
-
-                resolve(
-                    request.result
+            const transaction =
+                db.transaction(
+                    STORE_NAME,
+                    "readonly"
                 );
 
-            };
 
-
-        request.onerror =
-            function () {
-
-                reject(
-                    request.error
+            const store =
+                transaction.objectStore(
+                    STORE_NAME
                 );
 
-            };
 
-    });
+            const request =
+                store.get(id);
+
+
+            request.onsuccess =
+                function () {
+
+                    resolve(
+                        request.result
+                    );
+
+                };
+
+
+            request.onerror =
+                function () {
+
+                    reject(
+                        request.error
+                    );
+
+                };
+
+        }
+    );
 
 }
+
+
+/* ------------------------------ */
+/* Get All Photos */
+/* ------------------------------ */
+
 async function getAllPhotos() {
 
     const db =
         await openDatabase();
 
-    return new Promise((resolve, reject) => {
 
-        const transaction =
-            db.transaction(
-                "photos",
-                "readonly"
-            );
+    return new Promise(
+        (resolve, reject) => {
 
-        const store =
-            transaction.objectStore(
-                "photos"
-            );
-
-        const request =
-            store.getAll();
-
-        request.onsuccess =
-            function () {
-
-                resolve(
-                    request.result
+            const transaction =
+                db.transaction(
+                    STORE_NAME,
+                    "readonly"
                 );
 
-            };
 
-        request.onerror =
-            function () {
-
-                reject(
-                    request.error
+            const store =
+                transaction.objectStore(
+                    STORE_NAME
                 );
 
-            };
 
-    });
+            const request =
+                store.getAll();
+
+
+            request.onsuccess =
+                function () {
+
+                    resolve(
+                        request.result
+                    );
+
+                };
+
+
+            request.onerror =
+                function () {
+
+                    reject(
+                        request.error
+                    );
+
+                };
+
+        }
+    );
 
 }
 
+
+/* ------------------------------ */
+/* Get Selection */
+/* ------------------------------ */
 
 async function getSelection() {
 
     const db =
         await openDatabase();
 
-    return new Promise((resolve, reject) => {
 
-        const transaction =
-            db.transaction(
-                "selection",
-                "readonly"
-            );
+    return new Promise(
+        (resolve, reject) => {
 
-        const store =
-            transaction.objectStore(
-                "selection"
-            );
-
-        const request =
-            store.get("current");
-
-        request.onsuccess =
-            function () {
-
-                resolve(
-                    request.result
+            const transaction =
+                db.transaction(
+                    "selection",
+                    "readonly"
                 );
 
-            };
 
-        request.onerror =
-            function () {
-
-                reject(
-                    request.error
+            const store =
+                transaction.objectStore(
+                    "selection"
                 );
 
-            };
 
-    });
+            const request =
+                store.get(
+                    "current"
+                );
+
+
+            request.onsuccess =
+                function () {
+
+                    resolve(
+                        request.result
+                    );
+
+                };
+
+
+            request.onerror =
+                function () {
+
+                    reject(
+                        request.error
+                    );
+
+                };
+
+        }
+    );
 
 }
+
+
+/* ------------------------------ */
+/* Save Selection */
+/* ------------------------------ */
 
 async function saveSelection() {
 
     const db =
         await openDatabase();
 
-    return new Promise((resolve, reject) => {
 
-        const transaction =
-            db.transaction(
-                "selection",
-                "readwrite"
-            );
+    return new Promise(
+        (resolve, reject) => {
 
-        const store =
-            transaction.objectStore(
-                "selection"
-            );
-
-        store.put({
-
-            id: "current",
-
-            photos: selectedPhotos
-
-        });
-
-        transaction.oncomplete =
-            function () {
-
-                resolve();
-
-            };
-
-        transaction.onerror =
-            function () {
-
-                reject(
-                    transaction.error
+            const transaction =
+                db.transaction(
+                    "selection",
+                    "readwrite"
                 );
 
-            };
 
-    });
+            const store =
+                transaction.objectStore(
+                    "selection"
+                );
+
+
+            store.put({
+
+                id:
+                    "current",
+
+                photos:
+                    selectedPhotos
+
+            });
+
+
+            transaction.oncomplete =
+                function () {
+
+                    resolve();
+
+                };
+
+
+            transaction.onerror =
+                function () {
+
+                    reject(
+                        transaction.error
+                    );
+
+                };
+
+        }
+    );
 
 }
+
 
 /* ------------------------------ */
 /* Selected Prints */
@@ -365,7 +455,7 @@ let selectedPhotos = [];
    photo A
    photo B
 
-   = 3 physical prints
+   = 3 physical prints.
 */
 
 
@@ -375,7 +465,11 @@ let selectedPhotos = [];
 
 async function addUploadedFile(file) {
 
-    if (!file.type.startsWith("image/")) {
+    if (
+        !file.type.startsWith(
+            "image/"
+        )
+    ) {
 
         return;
 
@@ -383,11 +477,15 @@ async function addUploadedFile(file) {
 
 
     const id =
-        await savePhoto(file);
+        await savePhoto(
+            file
+        );
 
 
     const photo =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
 
 
     photo.className =
@@ -395,18 +493,28 @@ async function addUploadedFile(file) {
 
 
     const image =
-        document.createElement("img");
+        document.createElement(
+            "img"
+        );
+
+
+    const previewUrl =
+        URL.createObjectURL(
+            file
+        );
 
 
     image.src =
-        URL.createObjectURL(file);
+        previewUrl;
 
 
     image.alt =
         "uploaded photo";
 
 
-    photo.appendChild(image);
+    photo.appendChild(
+        image
+    );
 
 
     photo.dataset.id =
@@ -421,13 +529,17 @@ async function addUploadedFile(file) {
 
             event.stopPropagation();
 
-            addPrint(photo);
+            addPrint(
+                photo
+            );
 
         }
     );
 
 
-    gallery.appendChild(photo);
+    gallery.appendChild(
+        photo
+    );
 
 }
 
@@ -441,12 +553,19 @@ upload.addEventListener(
     async function (event) {
 
         const files =
-            [...event.target.files];
+            [
+                ...event.target.files
+            ];
 
 
-        for (const file of files) {
+        for (
+            const file
+            of files
+        ) {
 
-            await addUploadedFile(file);
+            await addUploadedFile(
+                file
+            );
 
         }
 
@@ -456,7 +575,8 @@ upload.addEventListener(
            can be selected again.
         */
 
-        upload.value = "";
+        upload.value =
+            "";
 
     }
 );
@@ -469,7 +589,8 @@ upload.addEventListener(
 function addPrint(photo) {
 
     if (
-        selectedPhotos.length >= 12
+        selectedPhotos.length >=
+        12
     ) {
 
         showFullMessage();
@@ -483,7 +604,9 @@ function addPrint(photo) {
         photo.dataset.id;
 
 
-    selectedPhotos.push(id);
+    selectedPhotos.push(
+        id
+    );
 
 
     updateUI();
@@ -514,13 +637,15 @@ function removePrint(index) {
 
 async function updateUI() {
 
-saveSelection();
+    await saveSelection();
+
 
     counter.textContent =
         `${selectedPhotos.length} / 12`;
 
 
-    strip.innerHTML = "";
+    strip.innerHTML =
+        "";
 
 
     for (
@@ -534,7 +659,9 @@ saveSelection();
 
 
         const storedPhoto =
-            await getPhoto(id);
+            await getPhoto(
+                id
+            );
 
 
         if (!storedPhoto) {
@@ -545,7 +672,9 @@ saveSelection();
 
 
         const slot =
-            document.createElement("div");
+            document.createElement(
+                "div"
+            );
 
 
         slot.className =
@@ -553,13 +682,24 @@ saveSelection();
 
 
         const image =
-            document.createElement("img");
+            document.createElement(
+                "img"
+            );
+
+
+        /*
+           Recreate the preview URL
+           from the stored Blob.
+        */
+
+        const previewUrl =
+            URL.createObjectURL(
+                storedPhoto.blob
+            );
 
 
         image.src =
-            URL.createObjectURL(
-                storedPhoto.file
-            );
+            previewUrl;
 
 
         image.alt =
@@ -567,7 +707,9 @@ saveSelection();
 
 
         const removeButton =
-            document.createElement("button");
+            document.createElement(
+                "button"
+            );
 
 
         removeButton.className =
@@ -594,29 +736,38 @@ saveSelection();
 
                 event.stopPropagation();
 
-                removePrint(index);
+                removePrint(
+                    index
+                );
 
             }
         );
 
 
-        slot.appendChild(image);
+        slot.appendChild(
+            image
+        );
+
 
         slot.appendChild(
             removeButton
         );
 
 
-        strip.appendChild(slot);
+        strip.appendChild(
+            slot
+        );
 
     }
 
 
     if (
-        selectedPhotos.length === 12
+        selectedPhotos.length ===
+        12
     ) {
 
         showFullMessage();
+
 
         complete.classList.add(
             "show"
@@ -672,6 +823,7 @@ uploadBox.addEventListener(
 
         e.preventDefault();
 
+
         uploadBox.style.background =
             "#f5f5f5";
 
@@ -696,17 +848,25 @@ uploadBox.addEventListener(
 
         e.preventDefault();
 
+
         uploadBox.style.background =
             "white";
 
 
         const files =
-            [...e.dataTransfer.files];
+            [
+                ...e.dataTransfer.files
+            ];
 
 
-        for (const file of files) {
+        for (
+            const file
+            of files
+        ) {
 
-            await addUploadedFile(file);
+            await addUploadedFile(
+                file
+            );
 
         }
 
@@ -734,11 +894,13 @@ const printImages = [
     "i12.JPG"
 
 ].sort(
-    () => Math.random() - 0.5
+    () =>
+        Math.random() - 0.5
 );
 
 
-let printIndex = 0;
+let printIndex =
+    0;
 
 
 const printSlide =
@@ -760,29 +922,43 @@ if (printSlide) {
                 printImages.length
             ) {
 
-                printIndex = 0;
+                printIndex =
+                    0;
 
             }
 
 
             printSlide.src =
-                printImages[printIndex];
+                printImages[
+                    printIndex
+                ];
 
         },
         500
     );
 
 }
+
+
+/* ------------------------------ */
+/* Restore Photo Bank */
+/* ------------------------------ */
+
 async function restorePhotoBank() {
 
     const photos =
         await getAllPhotos();
 
 
-    for (const storedPhoto of photos) {
+    for (
+        const storedPhoto
+        of photos
+    ) {
 
         const photo =
-            document.createElement("div");
+            document.createElement(
+                "div"
+            );
 
 
         photo.className =
@@ -790,20 +966,28 @@ async function restorePhotoBank() {
 
 
         const image =
-            document.createElement("img");
+            document.createElement(
+                "img"
+            );
+
+
+        const previewUrl =
+            URL.createObjectURL(
+                storedPhoto.blob
+            );
 
 
         image.src =
-            URL.createObjectURL(
-                storedPhoto.file
-            );
+            previewUrl;
 
 
         image.alt =
             "uploaded photo";
 
 
-        photo.appendChild(image);
+        photo.appendChild(
+            image
+        );
 
 
         photo.dataset.id =
@@ -818,13 +1002,17 @@ async function restorePhotoBank() {
 
                 event.stopPropagation();
 
-                addPrint(photo);
+                addPrint(
+                    photo
+                );
 
             }
         );
 
 
-        gallery.appendChild(photo);
+        gallery.appendChild(
+            photo
+        );
 
     }
 
@@ -841,60 +1029,85 @@ async function restorePhotoBank() {
         selectedPhotos =
             savedSelection.photos;
 
+
         await updateUI();
 
     }
 
 }
+
+
+/* ------------------------------ */
+/* Mark Ready For Checkout */
+/* ------------------------------ */
+
 async function markReadyForCheckout() {
 
     const db =
         await openDatabase();
 
-    return new Promise((resolve, reject) => {
 
-        const transaction =
-            db.transaction(
-                "selection",
-                "readwrite"
-            );
+    return new Promise(
+        (resolve, reject) => {
 
-        const store =
-            transaction.objectStore(
-                "selection"
-            );
-
-        store.put({
-
-            id: "current",
-
-            photos: selectedPhotos,
-
-            status: "checkout"
-
-        });
-
-        transaction.oncomplete =
-            function () {
-
-                resolve();
-
-            };
-
-        transaction.onerror =
-            function () {
-
-                reject(
-                    transaction.error
+            const transaction =
+                db.transaction(
+                    "selection",
+                    "readwrite"
                 );
 
-            };
 
-    });
+            const store =
+                transaction.objectStore(
+                    "selection"
+                );
+
+
+            store.put({
+
+                id:
+                    "current",
+
+                photos:
+                    selectedPhotos,
+
+                status:
+                    "checkout"
+
+            });
+
+
+            transaction.oncomplete =
+                function () {
+
+                    resolve();
+
+                };
+
+
+            transaction.onerror =
+                function () {
+
+                    reject(
+                        transaction.error
+                    );
+
+                };
+
+        }
+    );
 
 }
+
+
+/* ------------------------------ */
+/* Continue Button */
+/* ------------------------------ */
+
 const continueButton =
-    document.querySelector("#continue-button");
+    document.querySelector(
+        "#continue-button"
+    );
 
 
 if (continueButton) {
@@ -905,13 +1118,19 @@ if (continueButton) {
 
             event.preventDefault();
 
-            if (selectedPhotos.length !== 12) {
+
+            if (
+                selectedPhotos.length !==
+                12
+            ) {
 
                 return;
 
             }
 
+
             await markReadyForCheckout();
+
 
             window.location.href =
                 "checkout.html";
@@ -920,4 +1139,10 @@ if (continueButton) {
     );
 
 }
+
+
+/* ------------------------------ */
+/* Start */
+/* ------------------------------ */
+
 restorePhotoBank();
