@@ -846,5 +846,78 @@ async function restorePhotoBank() {
     }
 
 }
+async function markReadyForCheckout() {
 
+    const db =
+        await openDatabase();
+
+    return new Promise((resolve, reject) => {
+
+        const transaction =
+            db.transaction(
+                "selection",
+                "readwrite"
+            );
+
+        const store =
+            transaction.objectStore(
+                "selection"
+            );
+
+        store.put({
+
+            id: "current",
+
+            photos: selectedPhotos,
+
+            status: "checkout"
+
+        });
+
+        transaction.oncomplete =
+            function () {
+
+                resolve();
+
+            };
+
+        transaction.onerror =
+            function () {
+
+                reject(
+                    transaction.error
+                );
+
+            };
+
+    });
+
+}
+const continueButton =
+    document.querySelector("#continue-button");
+
+
+if (continueButton) {
+
+    continueButton.addEventListener(
+        "click",
+        async function (event) {
+
+            event.preventDefault();
+
+            if (selectedPhotos.length !== 12) {
+
+                return;
+
+            }
+
+            await markReadyForCheckout();
+
+            window.location.href =
+                "checkout.html";
+
+        }
+    );
+
+}
 restorePhotoBank();
