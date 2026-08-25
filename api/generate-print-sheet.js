@@ -1,6 +1,6 @@
 const { createClient } = require("@supabase/supabase-js");
 const { PDFDocument, rgb } = require("pdf-lib");
-
+const sharp = require("sharp");
 
 const supabase = createClient(
     "https://cvuyybeihtvhygxukbuj.supabase.co/",
@@ -8,77 +8,78 @@ const supabase = createClient(
 );
 
 
+/* -------------------------- */
+/* PRINT DIMENSIONS */
+/* -------------------------- */
+
 /*
-   A4 landscape dimensions in points.
-
-   1 inch = 72 points
-   1 inch = 2.54 cm
-
-   A4:
-   29.7 cm × 21 cm
+   A4 landscape:
+   297 × 210 mm
 */
 
 const A4_WIDTH =
-    29.7 / 2.54 * 72;
+    297 / 25.4 * 72;
 
 const A4_HEIGHT =
-    21 / 2.54 * 72;
+    210 / 25.4 * 72;
 
 
 /*
    Finished print:
-
-   10 × 10 cm
-
-   Photo:
-
-   8 × 8 cm
-
-   White border:
-
-   1 cm on every side
+   100 × 100 mm
 */
 
 const PRINT_SIZE =
-    10 / 2.54 * 72;
-
-const PHOTO_SIZE =
-    8 / 2.54 * 72;
+    100 / 25.4 * 72;
 
 
 /*
-   Layout:
+   Actual photo:
+   80 × 80 mm
+*/
 
+const PHOTO_SIZE =
+    80 / 25.4 * 72;
+
+
+/*
    3 columns × 2 rows
-
-   Six prints per page.
 */
 
 const COLUMNS = 3;
 const ROWS = 2;
 
-const SIDE_MARGIN =
-    (A4_WIDTH - (PRINT_SIZE * COLUMNS)) / 2;
 
-const TOP_MARGIN =
-    (A4_HEIGHT - (PRINT_SIZE * ROWS)) / 2;
+/*
+   Center the 3 × 2 grid
+   on the A4 page.
+*/
+
+const GRID_WIDTH =
+    PRINT_SIZE * COLUMNS;
+
+const GRID_HEIGHT =
+    PRINT_SIZE * ROWS;
+
+const LEFT_MARGIN =
+    (A4_WIDTH - GRID_WIDTH) / 2;
+
+const BOTTOM_MARGIN =
+    (A4_HEIGHT - GRID_HEIGHT) / 2;
 
 
 /*
-   Small cut marks.
-
-   These extend slightly outside
-   each 10 × 10 cm print.
+   Cut mark length.
 */
 
 const CUT_MARK_LENGTH = 8;
 
 
 /* -------------------------- */
-/* Helpers */
+/* STORAGE */
 /* -------------------------- */
 
-async function getImageBytes(
+async function downloadPhoto(
     storagePath
 ) {
 
@@ -112,10 +113,103 @@ async function getImageBytes(
 }
 
 
-/*
-   Draw crop marks around
-   a 10 × 10 cm print.
-*/
+/* -------------------------- */
+/* SQUARE CROP */
+/* -------------------------- */
+
+async function makeSquarePhoto(
+    imageBuffer
+) {
+
+    /*
+       Read the original dimensions.
+    */
+
+    const metadata =
+        await sharp(
+            imageBuffer
+        ).metadata();
+
+
+    const width =
+        metadata.width;
+
+    const height =
+        metadata.height;
+
+
+    if (
+        !width ||
+        !height
+    ) {
+
+        throw new Error(
+            "Unable to read image dimensions"
+        );
+
+    }
+
+
+    /*
+       Take the largest possible
+       centered square.
+    */
+
+    const squareSize =
+        Math.min(
+            width,
+            height
+        );
+
+
+    const left =
+        Math.floor(
+            (width - squareSize) / 2
+        );
+
+    const top =
+        Math.floor(
+            (height - squareSize) / 2
+        );
+
+
+    /*
+       Crop to square.
+
+       We don't resize to a physical
+       dimension here because the PDF
+       determines the physical size.
+    */
+
+    return await sharp(
+        imageBuffer
+    )
+        .extract({
+
+            left:
+                left,
+
+            top:
+                top,
+
+            width:
+                squareSize,
+
+            height:
+                squareSize
+
+        })
+        .jpeg({
+            quality: 95
+        })
+        .toBuffer();
+
+}
+
+
+/* -------------------------- */
+/* CUT MARKS */
+/* -------------------------- */
 
 function drawCutMarks(
     page,
@@ -123,28 +217,33 @@ function drawCutMarks(
     y
 ) {
 
-    const lineWidth = 0.5;
+    const thickness = 0.5;
 
 
     /*
-       Bottom-left
+       bottom-left
     */
 
     page.drawLine({
 
         start: {
-            x: x - CUT_MARK_LENGTH,
-            y: y
+            x:
+                x -
+                CUT_MARK_LENGTH,
+
+            y:
+                y
         },
 
         end: {
-            x: x - 2,
-            y: y
+            x:
+                x - 2,
+
+            y:
+                y
         },
 
-        thickness:
-            lineWidth,
-
+        thickness,
         color:
             rgb(0, 0, 0)
 
@@ -154,18 +253,23 @@ function drawCutMarks(
     page.drawLine({
 
         start: {
-            x: x,
-            y: y - CUT_MARK_LENGTH
+            x:
+                x,
+
+            y:
+                y -
+                CUT_MARK_LENGTH
         },
 
         end: {
-            x: x,
-            y: y - 2
+            x:
+                x,
+
+            y:
+                y - 2
         },
 
-        thickness:
-            lineWidth,
-
+        thickness,
         color:
             rgb(0, 0, 0)
 
@@ -173,14 +277,19 @@ function drawCutMarks(
 
 
     /*
-       Bottom-right
+       bottom-right
     */
 
     page.drawLine({
 
         start: {
-            x: x + PRINT_SIZE + 2,
-            y: y
+            x:
+                x +
+                PRINT_SIZE +
+                2,
+
+            y:
+                y
         },
 
         end: {
@@ -189,12 +298,11 @@ function drawCutMarks(
                 PRINT_SIZE +
                 CUT_MARK_LENGTH,
 
-            y: y
+            y:
+                y
         },
 
-        thickness:
-            lineWidth,
-
+        thickness,
         color:
             rgb(0, 0, 0)
 
@@ -222,9 +330,7 @@ function drawCutMarks(
                 y - 2
         },
 
-        thickness:
-            lineWidth,
-
+        thickness,
         color:
             rgb(0, 0, 0)
 
@@ -232,7 +338,7 @@ function drawCutMarks(
 
 
     /*
-       Top-left
+       top-left
     */
 
     page.drawLine({
@@ -256,9 +362,7 @@ function drawCutMarks(
                 PRINT_SIZE
         },
 
-        thickness:
-            lineWidth,
-
+        thickness,
         color:
             rgb(0, 0, 0)
 
@@ -268,7 +372,8 @@ function drawCutMarks(
     page.drawLine({
 
         start: {
-            x: x,
+            x:
+                x,
 
             y:
                 y +
@@ -277,7 +382,8 @@ function drawCutMarks(
         },
 
         end: {
-            x: x,
+            x:
+                x,
 
             y:
                 y +
@@ -285,9 +391,7 @@ function drawCutMarks(
                 CUT_MARK_LENGTH
         },
 
-        thickness:
-            lineWidth,
-
+        thickness,
         color:
             rgb(0, 0, 0)
 
@@ -295,7 +399,7 @@ function drawCutMarks(
 
 
     /*
-       Top-right
+       top-right
     */
 
     page.drawLine({
@@ -322,9 +426,7 @@ function drawCutMarks(
                 PRINT_SIZE
         },
 
-        thickness:
-            lineWidth,
-
+        thickness,
         color:
             rgb(0, 0, 0)
 
@@ -355,9 +457,7 @@ function drawCutMarks(
                 CUT_MARK_LENGTH
         },
 
-        thickness:
-            lineWidth,
-
+        thickness,
         color:
             rgb(0, 0, 0)
 
@@ -397,8 +497,7 @@ module.exports = async (
 
 
         /*
-           Protect this endpoint
-           with the same admin password.
+           Protect the test endpoint.
         */
 
         if (
@@ -453,7 +552,8 @@ module.exports = async (
 
 
         /*
-           Find selected photos.
+           Get the selected photos
+           and their photo records.
         */
 
         const {
@@ -491,11 +591,8 @@ module.exports = async (
 
 
         /*
-           Turn selected photos into
+           Turn quantities into
            physical print slots.
-
-           quantity = 2 means the same
-           image appears twice.
         */
 
         const printSlots = [];
@@ -560,7 +657,7 @@ module.exports = async (
 
 
         /*
-           Process six prints per page.
+           Two pages.
         */
 
         for (
@@ -577,25 +674,8 @@ module.exports = async (
 
 
             /*
-               White A4 background.
+               Six prints on each page.
             */
-
-            page.drawRectangle({
-
-                x: 0,
-                y: 0,
-
-                width:
-                    A4_WIDTH,
-
-                height:
-                    A4_HEIGHT,
-
-                color:
-                    rgb(1, 1, 1)
-
-            });
-
 
             const pageSlots =
                 printSlots.slice(
@@ -615,47 +695,39 @@ module.exports = async (
 
 
                 /*
-                   Get image from Supabase.
+                   Download original photo.
                 */
 
-                const imageBytes =
-                    await getImageBytes(
+                const originalBuffer =
+                    await downloadPhoto(
                         slot.storagePath
                     );
 
 
                 /*
-                   Determine image type.
+                   Convert to centered
+                   square.
                 */
 
-                let image;
-
-
-                if (
-                    slot.storagePath
-                        .toLowerCase()
-                        .endsWith(".png")
-                ) {
-
-                    image =
-                        await pdfDoc.embedPng(
-                            imageBytes
-                        );
-
-                }
-
-                else {
-
-                    image =
-                        await pdfDoc.embedJpg(
-                            imageBytes
-                        );
-
-                }
+                const squareBuffer =
+                    await makeSquarePhoto(
+                        originalBuffer
+                    );
 
 
                 /*
-                   Grid position.
+                   Embed the cropped
+                   JPEG into the PDF.
+                */
+
+                const image =
+                    await pdfDoc.embedJpg(
+                        squareBuffer
+                    );
+
+
+                /*
+                   Determine grid position.
                 */
 
                 const column =
@@ -668,28 +740,26 @@ module.exports = async (
 
 
                 const x =
-                    SIDE_MARGIN +
+                    LEFT_MARGIN +
                     column *
                     PRINT_SIZE;
 
 
                 const y =
-                    TOP_MARGIN +
+                    BOTTOM_MARGIN +
                     (ROWS - 1 - row) *
                     PRINT_SIZE;
 
 
                 /*
-                   White 10 × 10 cm print.
+                   White 10 × 10 cm
+                   finished print.
                 */
 
                 page.drawRectangle({
 
-                    x:
-                        x,
-
-                    y:
-                        y,
+                    x,
+                    y,
 
                     width:
                         PRINT_SIZE,
@@ -704,45 +774,10 @@ module.exports = async (
 
 
                 /*
-                   Center crop image
-                   into an 8 × 8 cm square.
+                   Place the 8 × 8 photo
+                   in the center.
 
-                   We calculate the largest
-                   centered square from the
-                   original image.
-                */
-
-                const imageWidth =
-                    image.width;
-
-                const imageHeight =
-                    image.height;
-
-
-                const squareSize =
-                    Math.min(
-                        imageWidth,
-                        imageHeight
-                    );
-
-
-                const cropX =
-                    (
-                        imageWidth -
-                        squareSize
-                    ) / 2;
-
-
-                const cropY =
-                    (
-                        imageHeight -
-                        squareSize
-                    ) / 2;
-
-
-                /*
-                   Put the photo inside
-                   the 1 cm white border.
+                   1 cm border on every side.
                 */
 
                 page.drawImage(
@@ -767,35 +802,14 @@ module.exports = async (
                             PHOTO_SIZE,
 
                         height:
-                            PHOTO_SIZE,
-
-                        /*
-                           Crop the image
-                           to a square.
-                        */
-
-                        clip: {
-
-                            x:
-                                cropX,
-
-                            y:
-                                cropY,
-
-                            width:
-                                squareSize,
-
-                            height:
-                                squareSize
-
-                        }
+                            PHOTO_SIZE
 
                     }
                 );
 
 
                 /*
-                   Add cut marks.
+                   Cut marks.
                 */
 
                 drawCutMarks(
@@ -810,7 +824,7 @@ module.exports = async (
 
 
         /*
-           Save PDF.
+           Generate PDF bytes.
         */
 
         const pdfBytes =
@@ -818,14 +832,13 @@ module.exports = async (
 
 
         /*
-           Send PDF to browser.
+           Return PDF.
         */
 
         res.setHeader(
             "Content-Type",
             "application/pdf"
         );
-
 
         res.setHeader(
             "Content-Disposition",
