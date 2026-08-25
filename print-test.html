@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>tiny photo club • print test</title>
+
+<style>
+
+body {
+    font-family: Arial, sans-serif;
+    padding: 40px;
+}
+
+button {
+    font-size: 18px;
+    padding: 15px 25px;
+    cursor: pointer;
+}
+
+#status {
+    margin-top: 20px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>print test</h1>
+
+<p>
+    this will generate the latest ready order
+    as a two-page A4 print sheet.
+</p>
+
+<button id="generate">
+    generate print sheet →
+</button>
+
+<div id="status"></div>
+
+
+<script>
+
+const button =
+    document.querySelector("#generate");
+
+const status =
+    document.querySelector("#status");
+
+
+button.addEventListener(
+    "click",
+    async function () {
+
+        const password =
+            prompt(
+                "enter admin password"
+            );
+
+
+        if (!password) {
+
+            return;
+
+        }
+
+
+        button.disabled = true;
+
+        status.textContent =
+            "generating...";
+
+
+        try {
+
+            const response =
+                await fetch(
+                    "/api/generate-print-sheet",
+                    {
+
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify({
+                                password:
+                                    password
+                            })
+
+                    }
+                );
+
+
+            if (!response.ok) {
+
+                const data =
+                    await response.json();
+
+                throw new Error(
+                    data.error ||
+                    "Something went wrong"
+                );
+
+            }
+
+
+            const blob =
+                await response.blob();
+
+
+            const url =
+                URL.createObjectURL(
+                    blob
+                );
+
+
+            /*
+               Open the PDF in a new tab.
+            */
+
+            window.open(
+                url,
+                "_blank"
+            );
+
+
+            status.textContent =
+                "done ♡";
+
+        }
+
+        catch (error) {
+
+            console.error(error);
+
+            status.textContent =
+                error.message;
+
+        }
+
+
+        button.disabled = false;
+
+    }
+);
+
+</script>
+
+</body>
+
+</html>
