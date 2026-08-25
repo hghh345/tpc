@@ -1,3 +1,13 @@
+const plans = document.querySelectorAll(".plan");
+const price = document.querySelector("#price");
+const emailInput = document.querySelector("#email");
+const checkoutButton = document.querySelector("#checkout-button");
+
+
+/* -------------------------- */
+/* PHOTO SESSION */
+/* -------------------------- */
+
 async function preparePhotoSession() {
 
     const photoSessionId =
@@ -11,11 +21,10 @@ async function preparePhotoSession() {
                 2
             );
 
+
         request.onerror = function () {
 
-            reject(
-                request.error
-            );
+            reject(request.error);
 
         };
 
@@ -130,11 +139,6 @@ async function preparePhotoSession() {
 
 }
 
-const plans = document.querySelectorAll(".plan");
-const price = document.querySelector("#price");
-const emailInput = document.querySelector("#email");
-const checkoutButton = document.querySelector("#checkout-button");
-
 
 /* -------------------------- */
 /* PLAN SELECTION */
@@ -144,9 +148,15 @@ plans.forEach(plan => {
 
     plan.addEventListener("click", () => {
 
-        plans.forEach(p => p.classList.remove("selected"));
+        plans.forEach(p => {
+
+            p.classList.remove("selected");
+
+        });
+
 
         plan.classList.add("selected");
+
 
         price.textContent =
             "€" + plan.dataset.price;
@@ -160,132 +170,208 @@ plans.forEach(plan => {
 /* CHECKOUT */
 /* -------------------------- */
 
-checkoutButton.addEventListener("click", async () => {
+checkoutButton.addEventListener(
+    "click",
+    async () => {
 
-    const email = emailInput.value.trim();
-
-    /*
-       Check email
-    */
-
-    if (!email) {
-
-        emailInput.focus();
-        emailInput.reportValidity();
-
-        return;
-
-    }
-
-    if (!emailInput.checkValidity()) {
-
-        emailInput.focus();
-        emailInput.reportValidity();
-
-        return;
-
-    }
+        const email =
+            emailInput.value.trim();
 
 
-    /*
-       Find selected plan
-    */
+        /*
+           Check email
+        */
 
-    const selectedPlan =
-        document.querySelector(".plan.selected");
+        if (!email) {
 
-    const selectedPrice =
-        selectedPlan.dataset.price;
+            emailInput.focus();
 
-        const photoSessionId =
-    await preparePhotoSession();
+            emailInput.reportValidity();
 
+            return;
 
-    /*
-       Match selected plan to Stripe Price ID
-    */
-
-    let priceId;
-
-    if (selectedPrice === "18") {
-
-        priceId =
-            "price_1U82TOA5iFvf2pvF4uGCTXSS";
-
-    }
-
-    else if (selectedPrice === "45") {
-
-        priceId =
-            "price_1U82U6A5iFvf2pvFr1MFGx4U";
-
-    }
+        }
 
 
-    /*
-       Disable button while Stripe session
-       is being created
-    */
+        if (!emailInput.checkValidity()) {
 
-    checkoutButton.disabled = true;
+            emailInput.focus();
 
-    checkoutButton.textContent =
-        "one moment ♡";
+            emailInput.reportValidity();
 
-
-    try {
-
-        const response = await fetch(
-            "/api/create-checkout-session",
-            {
-                method: "POST",
-
-                headers: {
-                    "Content-Type": "application/json"
-                },
-
-                body: JSON.stringify({
-                    priceId: priceId,
-                    email: email
-                        photoSessionId: photoSessionId
-                })
-            }
-        );
-
-
-        const data = await response.json();
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                data.error || "Something went wrong."
-            );
+            return;
 
         }
 
 
         /*
-           Send customer to Stripe
+           Find selected plan
         */
 
-        window.location.href = data.url;
+        const selectedPlan =
+            document.querySelector(
+                ".plan.selected"
+            );
 
-    }
 
-    catch (error) {
+        if (!selectedPlan) {
 
-        console.error(error);
+            alert(
+                "please choose a plan ♡"
+            );
 
-        alert(
-            "something went wrong ♡ please try again."
-        );
+            return;
 
-        checkoutButton.disabled = false;
+        }
+
+
+        const selectedPrice =
+            selectedPlan.dataset.price;
+
+
+        /*
+           Match selected plan to Stripe Price ID
+        */
+
+        let priceId;
+
+
+        if (selectedPrice === "18") {
+
+            priceId =
+                "price_1U82TOA5iFvf2pvF4uGCTXSS";
+
+        }
+
+
+        else if (selectedPrice === "45") {
+
+            priceId =
+                "price_1U82U6A5iFvf2pvFr1MFGx4U";
+
+        }
+
+
+        /*
+           Prepare photo session
+        */
+
+        let photoSessionId;
+
+
+        try {
+
+            photoSessionId =
+                await preparePhotoSession();
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "Photo session error:",
+                error
+            );
+
+
+            alert(
+                "we couldn't find your dozen ♡ please go back and try again."
+            );
+
+
+            return;
+
+        }
+
+
+        /*
+           Disable button
+        */
+
+        checkoutButton.disabled =
+            true;
+
 
         checkoutButton.textContent =
-            "continue to checkout →";
+            "one moment ♡";
+
+
+        try {
+
+            const response =
+                await fetch(
+                    "/api/create-checkout-session",
+                    {
+
+                        method: "POST",
+
+                        headers: {
+
+                            "Content-Type":
+                                "application/json"
+
+                        },
+
+                        body:
+                            JSON.stringify({
+
+                                priceId:
+                                    priceId,
+
+                                email:
+                                    email,
+
+                                photoSessionId:
+                                    photoSessionId
+
+                            })
+
+                    }
+                );
+
+
+            const data =
+                await response.json();
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    data.error ||
+                    "Something went wrong."
+                );
+
+            }
+
+
+            /*
+               Send customer to Stripe
+            */
+
+            window.location.href =
+                data.url;
+
+        }
+
+
+        catch (error) {
+
+            console.error(error);
+
+
+            alert(
+                "something went wrong ♡ please try again."
+            );
+
+
+            checkoutButton.disabled =
+                false;
+
+
+            checkoutButton.textContent =
+                "continue to checkout →";
+
+        }
 
     }
-
-});
+);
