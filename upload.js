@@ -214,6 +214,93 @@ async function getPhoto(id) {
     });
 
 }
+async function getAllPhotos() {
+
+    const db =
+        await openDatabase();
+
+    return new Promise((resolve, reject) => {
+
+        const transaction =
+            db.transaction(
+                "photos",
+                "readonly"
+            );
+
+        const store =
+            transaction.objectStore(
+                "photos"
+            );
+
+        const request =
+            store.getAll();
+
+        request.onsuccess =
+            function () {
+
+                resolve(
+                    request.result
+                );
+
+            };
+
+        request.onerror =
+            function () {
+
+                reject(
+                    request.error
+                );
+
+            };
+
+    });
+
+}
+
+
+async function getSelection() {
+
+    const db =
+        await openDatabase();
+
+    return new Promise((resolve, reject) => {
+
+        const transaction =
+            db.transaction(
+                "selection",
+                "readonly"
+            );
+
+        const store =
+            transaction.objectStore(
+                "selection"
+            );
+
+        const request =
+            store.get("current");
+
+        request.onsuccess =
+            function () {
+
+                resolve(
+                    request.result
+                );
+
+            };
+
+        request.onerror =
+            function () {
+
+                reject(
+                    request.error
+                );
+
+            };
+
+    });
+
+}
+
 async function saveSelection() {
 
     const db =
@@ -686,3 +773,78 @@ if (printSlide) {
     );
 
 }
+async function restorePhotoBank() {
+
+    const photos =
+        await getAllPhotos();
+
+
+    for (const storedPhoto of photos) {
+
+        const photo =
+            document.createElement("div");
+
+
+        photo.className =
+            "photo";
+
+
+        const image =
+            document.createElement("img");
+
+
+        image.src =
+            URL.createObjectURL(
+                storedPhoto.file
+            );
+
+
+        image.alt =
+            "uploaded photo";
+
+
+        photo.appendChild(image);
+
+
+        photo.dataset.id =
+            storedPhoto.id;
+
+
+        photo.addEventListener(
+            "click",
+            function (event) {
+
+                event.preventDefault();
+
+                event.stopPropagation();
+
+                addPrint(photo);
+
+            }
+        );
+
+
+        gallery.appendChild(photo);
+
+    }
+
+
+    const savedSelection =
+        await getSelection();
+
+
+    if (
+        savedSelection &&
+        savedSelection.photos
+    ) {
+
+        selectedPhotos =
+            savedSelection.photos;
+
+        await updateUI();
+
+    }
+
+}
+
+restorePhotoBank();
