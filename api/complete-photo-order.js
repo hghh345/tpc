@@ -47,7 +47,12 @@ module.exports = async (req, res) => {
             });
 
         }
-
+        const totalPrints =
+         photos.reduce(
+        (total, photo) =>
+            total + photo.quantity,
+        0
+         );
 
         if (photos.length !== 12) {
 
