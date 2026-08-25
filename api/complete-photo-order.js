@@ -380,9 +380,6 @@ if (totalPrints !== 12) {
                     .from("selected_photos")
                     .insert({
 
-                        user_id:
-                            user.id,
-
                         print_cycle_id:
                             printCycle.id,
 
