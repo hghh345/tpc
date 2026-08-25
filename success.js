@@ -15,7 +15,7 @@ const DB_NAME =
     "tiny-photo-club";
 
 const DB_VERSION =
-    2;
+    3;
 
 const STORE_NAME =
     "photos";
@@ -279,7 +279,7 @@ async function completePhotoOrder(
 
         const data =
             await fileToDataURL(
-                storedPhoto.file
+                storedPhoto.blob
             );
 
 

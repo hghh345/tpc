@@ -462,13 +462,12 @@ let selectedPhotos = [];
 /* ------------------------------ */
 /* Add Uploaded File */
 /* ------------------------------ */
-
 async function addUploadedFile(file) {
 
     if (
-        !file.type.startsWith(
-            "image/"
-        )
+        !file.type.startsWith("image/") &&
+        !file.name.toLowerCase().endsWith(".heic") &&
+        !file.name.toLowerCase().endsWith(".heif")
     ) {
 
         return;
@@ -476,9 +475,75 @@ async function addUploadedFile(file) {
     }
 
 
+    /*
+       HEIC / HEIF photos need to be converted
+       because browsers cannot reliably display
+       them in an <img>.
+    */
+
+    let photoBlob = file;
+
+
+    const isHEIC =
+        file.type === "image/heic" ||
+        file.type === "image/heif" ||
+        file.name.toLowerCase().endsWith(".heic") ||
+        file.name.toLowerCase().endsWith(".heif");
+
+
+    if (isHEIC) {
+
+        try {
+
+            const converted =
+                await heic2any({
+
+                    blob:
+                        file,
+
+                    toType:
+                        "image/jpeg",
+
+                    quality:
+                        0.92
+
+                });
+
+
+            /*
+               heic2any can return an array
+               or a single Blob.
+            */
+
+            photoBlob =
+                Array.isArray(converted)
+                    ? converted[0]
+                    : converted;
+
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "HEIC conversion failed:",
+                error
+            );
+
+            alert(
+                "this photo couldn't be processed ♡ please try another photo."
+            );
+
+            return;
+
+        }
+
+    }
+
+
     const id =
         await savePhoto(
-            file
+            photoBlob
         );
 
 
@@ -500,7 +565,7 @@ async function addUploadedFile(file) {
 
     const previewUrl =
         URL.createObjectURL(
-            file
+            photoBlob
         );
 
 
