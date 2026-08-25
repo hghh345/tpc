@@ -127,50 +127,96 @@ module.exports = async (req, res) => {
 
 
             /* -------------------------------- */
-            /* CREATE SUBSCRIPTION */
-            /* -------------------------------- */
+/* FIND OR CREATE SUBSCRIPTION */
+/* -------------------------------- */
 
-            const {
-                data: subscriptionData,
-                error: subscriptionError
-            } = await supabase
-                .from("subscriptions")
-                .insert({
-
-                    user_id: userId,
-
-                    stripe_customer_id:
-                        stripeCustomerId,
-
-                    stripe_subscription_id:
-                        stripeSubscriptionId,
-
-                    plan: plan,
-
-                    status: "active"
-
-                })
-                .select()
-                .single();
+let subscriptionData;
 
 
-            if (subscriptionError) {
+/*
+   Check whether this Stripe subscription
+   already exists.
+*/
 
-                console.error(
-                    "Subscription error:",
-                    subscriptionError
-                );
+const {
+    data: existingSubscription,
+    error: existingSubscriptionError
+} = await supabase
+    .from("subscriptions")
+    .select("*")
+    .eq(
+        "stripe_subscription_id",
+        stripeSubscriptionId
+    )
+    .maybeSingle();
 
-                throw subscriptionError;
 
-            }
+if (existingSubscriptionError) {
+
+    throw existingSubscriptionError;
+
+}
 
 
-            console.log(
-                "Created subscription:",
-                subscriptionData.id
-            );
+if (existingSubscription) {
 
+    console.log(
+        "Subscription already exists:",
+        existingSubscription.id
+    );
+
+    subscriptionData = existingSubscription;
+
+}
+
+
+else {
+
+    const {
+        data,
+        error: subscriptionError
+    } = await supabase
+        .from("subscriptions")
+        .insert({
+
+            user_id: userId,
+
+            stripe_customer_id:
+                stripeCustomerId,
+
+            stripe_subscription_id:
+                stripeSubscriptionId,
+
+            plan: plan,
+
+            status: "active"
+
+        })
+        .select()
+        .single();
+
+
+    if (subscriptionError) {
+
+        console.error(
+            "Subscription error:",
+            subscriptionError
+        );
+
+        throw subscriptionError;
+
+    }
+
+
+    subscriptionData = data;
+
+
+    console.log(
+        "Created subscription:",
+        subscriptionData.id
+    );
+
+}
 
             /* -------------------------------- */
             /* CREATE FIRST PRINT CYCLE */
@@ -190,7 +236,7 @@ module.exports = async (req, res) => {
 
                     cycle_number: 1,
 
-                    status: "open"
+                    status: "selecting"
 
                 })
                 .select()
