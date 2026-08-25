@@ -367,7 +367,7 @@ module.exports = async (req, res) => {
                                 contentType,
 
                             upsert:
-                                false
+                                true
                         }
                     );
 
