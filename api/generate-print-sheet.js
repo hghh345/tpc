@@ -12,48 +12,20 @@ const supabase = createClient(
 /* PRINT DIMENSIONS */
 /* -------------------------- */
 
-/*
-   A4 landscape:
-   297 × 210 mm
-*/
-
 const A4_WIDTH =
     297 / 25.4 * 72;
 
 const A4_HEIGHT =
     210 / 25.4 * 72;
 
-
-/*
-   Finished print:
-   100 × 100 mm
-*/
-
 const PRINT_SIZE =
     100 / 25.4 * 72;
-
-
-/*
-   Actual photo:
-   80 × 80 mm
-*/
 
 const PHOTO_SIZE =
     80 / 25.4 * 72;
 
-
-/*
-   3 columns × 2 rows
-*/
-
 const COLUMNS = 3;
 const ROWS = 2;
-
-
-/*
-   Center the 3 × 2 grid
-   on the A4 page.
-*/
 
 const GRID_WIDTH =
     PRINT_SIZE * COLUMNS;
@@ -67,16 +39,11 @@ const LEFT_MARGIN =
 const BOTTOM_MARGIN =
     (A4_HEIGHT - GRID_HEIGHT) / 2;
 
-
-/*
-   Cut mark length.
-*/
-
 const CUT_MARK_LENGTH = 8;
 
 
 /* -------------------------- */
-/* STORAGE */
+/* DOWNLOAD PHOTO */
 /* -------------------------- */
 
 async function downloadPhoto(
@@ -121,10 +88,6 @@ async function makeSquarePhoto(
     imageBuffer
 ) {
 
-    /*
-       Read the original dimensions.
-    */
-
     const metadata =
         await sharp(
             imageBuffer
@@ -150,11 +113,6 @@ async function makeSquarePhoto(
     }
 
 
-    /*
-       Take the largest possible
-       centered square.
-    */
-
     const squareSize =
         Math.min(
             width,
@@ -167,19 +125,12 @@ async function makeSquarePhoto(
             (width - squareSize) / 2
         );
 
+
     const top =
         Math.floor(
             (height - squareSize) / 2
         );
 
-
-    /*
-       Crop to square.
-
-       We don't resize to a physical
-       dimension here because the PDF
-       determines the physical size.
-    */
 
     return await sharp(
         imageBuffer
@@ -220,9 +171,7 @@ function drawCutMarks(
     const thickness = 0.5;
 
 
-    /*
-       bottom-left
-    */
+    /* bottom-left */
 
     page.drawLine({
 
@@ -276,9 +225,7 @@ function drawCutMarks(
     });
 
 
-    /*
-       bottom-right
-    */
+    /* bottom-right */
 
     page.drawLine({
 
@@ -337,9 +284,7 @@ function drawCutMarks(
     });
 
 
-    /*
-       top-left
-    */
+    /* top-left */
 
     page.drawLine({
 
@@ -398,9 +343,7 @@ function drawCutMarks(
     });
 
 
-    /*
-       top-right
-    */
+    /* top-right */
 
     page.drawLine({
 
@@ -492,18 +435,19 @@ module.exports = async (
     try {
 
         const {
-            password
+            password,
+            printCycleId
         } = req.body;
 
 
-        /*
-           Protect the test endpoint.
-        */
+        /* -------------------------- */
+        /* PASSWORD */
+        /* -------------------------- */
 
         if (
             !password ||
             password !==
-            process.env.ADMIN_PASSWORD
+                process.env.ADMIN_PASSWORD
         ) {
 
             return res.status(401).json({
@@ -516,10 +460,25 @@ module.exports = async (
         }
 
 
-        /*
-           Find the most recent
-           ready print cycle.
-        */
+        /* -------------------------- */
+        /* PRINT CYCLE ID */
+        /* -------------------------- */
+
+        if (!printCycleId) {
+
+            return res.status(400).json({
+
+                error:
+                    "Missing print cycle ID"
+
+            });
+
+        }
+
+
+        /* -------------------------- */
+        /* FIND SPECIFIC PRINT CYCLE */
+        /* -------------------------- */
 
         const {
             data: printCycle,
@@ -527,18 +486,14 @@ module.exports = async (
         } =
             await supabase
                 .from("print_cycles")
-                .select("*")
+                .select(`
+                    id,
+                    status
+                `)
                 .eq(
-                    "status",
-                    "ready"
+                    "id",
+                    printCycleId
                 )
-                .order(
-                    "created_at",
-                    {
-                        ascending: false
-                    }
-                )
-                .limit(1)
                 .single();
 
 
@@ -552,9 +507,33 @@ module.exports = async (
 
 
         /*
-           Get the selected photos
-           and their photo records.
+           Only generate sheets for
+           orders that are ready or
+           already printed.
         */
+
+        if (
+            ![
+                "ready",
+                "printed"
+            ].includes(
+                printCycle.status
+            )
+        ) {
+
+            return res.status(400).json({
+
+                error:
+                    "This order is not ready for printing"
+
+            });
+
+        }
+
+
+        /* -------------------------- */
+        /* SELECTED PHOTOS */
+        /* -------------------------- */
 
         const {
             data: selectedPhotos,
@@ -571,7 +550,7 @@ module.exports = async (
                 `)
                 .eq(
                     "print_cycle_id",
-                    printCycle.id
+                    printCycleId
                 )
                 .order(
                     "created_at",
@@ -590,10 +569,9 @@ module.exports = async (
         }
 
 
-        /*
-           Turn quantities into
-           physical print slots.
-        */
+        /* -------------------------- */
+        /* CREATE PRINT SLOTS */
+        /* -------------------------- */
 
         const printSlots = [];
 
@@ -648,17 +626,13 @@ module.exports = async (
         }
 
 
-        /*
-           Create PDF.
-        */
+        /* -------------------------- */
+        /* CREATE PDF */
+        /* -------------------------- */
 
         const pdfDoc =
             await PDFDocument.create();
 
-
-        /*
-           Two pages.
-        */
 
         for (
             let pageIndex = 0;
@@ -672,10 +646,6 @@ module.exports = async (
                     A4_HEIGHT
                 ]);
 
-
-            /*
-               Six prints on each page.
-            */
 
             const pageSlots =
                 printSlots.slice(
@@ -694,9 +664,9 @@ module.exports = async (
                     pageSlots[slotIndex];
 
 
-                /*
-                   Download original photo.
-                */
+                /* -------------------------- */
+                /* DOWNLOAD PHOTO */
+                /* -------------------------- */
 
                 const originalBuffer =
                     await downloadPhoto(
@@ -704,10 +674,9 @@ module.exports = async (
                     );
 
 
-                /*
-                   Convert to centered
-                   square.
-                */
+                /* -------------------------- */
+                /* CENTER CROP */
+                /* -------------------------- */
 
                 const squareBuffer =
                     await makeSquarePhoto(
@@ -715,10 +684,9 @@ module.exports = async (
                     );
 
 
-                /*
-                   Embed the cropped
-                   JPEG into the PDF.
-                */
+                /* -------------------------- */
+                /* EMBED IMAGE */
+                /* -------------------------- */
 
                 const image =
                     await pdfDoc.embedJpg(
@@ -726,9 +694,9 @@ module.exports = async (
                     );
 
 
-                /*
-                   Determine grid position.
-                */
+                /* -------------------------- */
+                /* GRID POSITION */
+                /* -------------------------- */
 
                 const column =
                     slotIndex % COLUMNS;
@@ -751,10 +719,9 @@ module.exports = async (
                     PRINT_SIZE;
 
 
-                /*
-                   White 10 × 10 cm
-                   finished print.
-                */
+                /* -------------------------- */
+                /* WHITE PRINT */
+                /* -------------------------- */
 
                 page.drawRectangle({
 
@@ -773,12 +740,9 @@ module.exports = async (
                 });
 
 
-                /*
-                   Place the 8 × 8 photo
-                   in the center.
-
-                   1 cm border on every side.
-                */
+                /* -------------------------- */
+                /* PHOTO */
+                /* -------------------------- */
 
                 page.drawImage(
                     image,
@@ -808,9 +772,9 @@ module.exports = async (
                 );
 
 
-                /*
-                   Cut marks.
-                */
+                /* -------------------------- */
+                /* CUT MARKS */
+                /* -------------------------- */
 
                 drawCutMarks(
                     page,
@@ -823,26 +787,23 @@ module.exports = async (
         }
 
 
-        /*
-           Generate PDF bytes.
-        */
+        /* -------------------------- */
+        /* SAVE PDF */
+        /* -------------------------- */
 
         const pdfBytes =
             await pdfDoc.save();
 
-
-        /*
-           Return PDF.
-        */
 
         res.setHeader(
             "Content-Type",
             "application/pdf"
         );
 
+
         res.setHeader(
             "Content-Disposition",
-            'inline; filename="tiny-photo-club-test.pdf"'
+            'inline; filename="tiny-photo-club-print-sheet.pdf"'
         );
 
 
