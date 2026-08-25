@@ -47,20 +47,21 @@ module.exports = async (req, res) => {
             });
 
         }
-        const totalPrints =
-         photos.reduce(
+    const totalPrints =
+    photos.reduce(
         (total, photo) =>
             total + photo.quantity,
         0
-         );
+    );
 
-        if (photos.length !== 12) {
 
-            return res.status(400).json({
-                error: "Exactly 12 photos are required"
-            });
+if (totalPrints !== 12) {
 
-        }
+    return res.status(400).json({
+        error: "Exactly 12 prints are required"
+    });
+
+}
 
 
         /*
