@@ -1071,3 +1071,22 @@ padding:0;
 .about-copy p:last-child {
     margin-bottom: 0;
 }
+.faq-copy {
+    max-width: 650px;
+}
+
+.faq-item {
+    margin-bottom: 3.5rem;
+}
+
+.faq-item h2 {
+    margin-bottom: 1rem;
+}
+
+.faq-item p {
+    margin-bottom: 0;
+}
+
+.faq-item:last-child {
+    margin-bottom: 0;
+}
