@@ -1064,3 +1064,10 @@ padding:0;
     padding-bottom: 30px;
     border-bottom: 1px solid #ddd;
 }
+.about-copy p {
+    margin-bottom: 2.5rem;
+}
+
+.about-copy p:last-child {
+    margin-bottom: 0;
+}
