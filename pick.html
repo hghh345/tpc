@@ -8,281 +8,624 @@
     <title>pick your summer — tiny photo club</title>
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
             margin: 0;
-            padding: 40px 20px;
-            font-family: Arial, sans-serif;
-            color: #000;
             background: #fff;
+            color: #000;
+            font-family: Arial, Helvetica, sans-serif;
         }
 
-        main {
-            max-width: 700px;
-            margin: 0 auto;
-        }
-
-        section {
-            margin-bottom: 80px;
-        }
-
-        h1, h2, p {
-            margin-top: 0;
-        }
-
-        h1 {
-            font-size: 48px;
-            line-height: 1;
-        }
-
-        h2 {
-            font-size: 32px;
-        }
-
-        p {
-            font-size: 18px;
-            line-height: 1.4;
-        }
-
-        button {
+        button,
+        input {
             font: inherit;
+        }
+
+        /* --------------------------------
+           PAGE
+        -------------------------------- */
+
+        .pick-page {
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .pick-section {
+            min-height: 100vh;
+            padding: 7vw;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* --------------------------------
+           TOP
+        -------------------------------- */
+
+        .pick-top {
+            position: absolute;
+            top: 24px;
+            left: 24px;
+            right: 24px;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            font-size: 14px;
+            letter-spacing: -0.02em;
+        }
+
+        .back {
             color: #000;
-            background: #fff;
-            border: 1px solid #000;
-            cursor: pointer;
+            text-decoration: none;
         }
 
-        .plan {
+        .back:hover {
+            text-decoration: underline;
+        }
+
+        .tiny {
+            text-transform: lowercase;
+        }
+
+        /* --------------------------------
+           INTRO
+        -------------------------------- */
+
+        .intro {
+            padding-top: 12vw;
+        }
+
+        .intro h1 {
+            margin: 0;
+            max-width: 900px;
+
+            font-size: clamp(64px, 11vw, 150px);
+            line-height: 0.82;
+            letter-spacing: -0.075em;
+            font-weight: 700;
+        }
+
+        .intro p {
+            margin: 48px 0 0;
+
+            max-width: 430px;
+
+            font-size: clamp(22px, 3vw, 38px);
+            line-height: 1.05;
+            letter-spacing: -0.045em;
+        }
+
+        .scroll-note {
+            margin-top: auto;
+
+            font-size: 13px;
+            text-transform: lowercase;
+            letter-spacing: -0.01em;
+        }
+
+        /* --------------------------------
+           PACKAGES
+        -------------------------------- */
+
+        .packages {
+            padding-top: 12vw;
+            padding-bottom: 12vw;
+        }
+
+        .packages-intro {
+            margin-bottom: 70px;
+        }
+
+        .packages-intro p {
+            margin: 0;
+
+            font-size: 14px;
+            text-transform: lowercase;
+        }
+
+        .options {
             width: 100%;
-            padding: 30px;
-            text-align: left;
-            margin-bottom: 20px;
+            max-width: 1000px;
         }
 
-        .plan.selected {
+        .option {
+            width: 100%;
+
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 40px;
+
+            padding: 42px 0;
+
+            background: transparent;
+            color: #000;
+
+            border: 0;
+            border-top: 1px solid #000;
+
+            text-align: left;
+            cursor: pointer;
+
+            transition:
+                padding 180ms ease,
+                background 180ms ease,
+                color 180ms ease;
+        }
+
+        .option:last-child {
+            border-bottom: 1px solid #000;
+        }
+
+        .option:hover {
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        .option.selected {
+            padding-left: 20px;
+            padding-right: 20px;
+
             background: #000;
             color: #fff;
         }
 
-        .email {
-            width: 100%;
-            box-sizing: border-box;
-            padding: 18px;
-            border: 1px solid #000;
-            font-size: 18px;
+        .option-main {
+            min-width: 0;
         }
 
-        .cta {
-            padding: 18px 24px;
+        .option-title {
+            margin: 0;
+
+            font-size: clamp(42px, 6vw, 78px);
+            line-height: 0.9;
+            letter-spacing: -0.065em;
+            font-weight: 700;
+        }
+
+        .option-copy {
+            margin: 22px 0 0;
+
+            max-width: 430px;
+
+            font-size: clamp(18px, 2vw, 25px);
+            line-height: 1.05;
+            letter-spacing: -0.035em;
+        }
+
+        .option-price {
+            align-self: start;
+
+            font-size: clamp(28px, 4vw, 48px);
+            line-height: 1;
+
+            letter-spacing: -0.05em;
+            white-space: nowrap;
+        }
+
+        .option-number {
+            display: block;
+
+            margin-bottom: 14px;
+
+            font-size: 12px;
+            letter-spacing: 0;
+            text-transform: uppercase;
+        }
+
+        /* --------------------------------
+           EMAIL
+        -------------------------------- */
+
+        .email-section {
+            min-height: 85vh;
+            align-items: flex-start;
+        }
+
+        .email-label {
+            margin: 0 0 40px;
+
+            max-width: 850px;
+
+            font-size: clamp(48px, 8vw, 105px);
+            line-height: 0.86;
+            letter-spacing: -0.075em;
+            font-weight: 700;
+        }
+
+        .email-form {
+            width: 100%;
+            max-width: 720px;
+        }
+
+        .email-input {
+            width: 100%;
+
+            padding: 18px 0;
+
+            border: 0;
+            border-bottom: 2px solid #000;
+
+            border-radius: 0;
+            outline: none;
+
+            background: transparent;
+            color: #000;
+
+            font-size: clamp(24px, 3vw, 38px);
+            letter-spacing: -0.04em;
+        }
+
+        .email-input::placeholder {
+            color: #999;
+        }
+
+        .email-input:focus {
+            border-bottom-width: 4px;
+        }
+
+        .continue {
+            margin-top: 55px;
+
+            padding: 0;
+
+            border: 0;
+            background: transparent;
+            color: #000;
+
+            font-size: clamp(28px, 4vw, 48px);
+            line-height: 1;
+
+            letter-spacing: -0.055em;
+            font-weight: 700;
+
+            cursor: pointer;
+
+            text-align: left;
+        }
+
+        .continue:hover {
+            text-decoration: underline;
+            text-decoration-thickness: 3px;
+            text-underline-offset: 7px;
+        }
+
+        /* --------------------------------
+           FOOTER
+        -------------------------------- */
+
+        .pick-footer {
+            min-height: 40vh;
+            padding: 7vw;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .footer-copy {
+            max-width: 600px;
+
+            font-size: clamp(30px, 5vw, 65px);
+            line-height: 0.9;
+            letter-spacing: -0.065em;
+            font-weight: 700;
+        }
+
+        /* --------------------------------
+           MOBILE
+        -------------------------------- */
+
+        @media (max-width: 600px) {
+
+            .pick-top {
+                top: 18px;
+                left: 18px;
+                right: 18px;
+            }
+
+            .pick-section {
+                min-height: auto;
+                padding: 100px 20px;
+            }
+
+            .intro {
+                min-height: 100vh;
+                padding-top: 130px;
+                padding-bottom: 40px;
+            }
+
+            .intro h1 {
+                font-size: clamp(64px, 20vw, 110px);
+            }
+
+            .intro p {
+                margin-top: 35px;
+                font-size: 27px;
+            }
+
+            .scroll-note {
+                margin-top: 100px;
+            }
+
+            .packages {
+                padding-top: 100px;
+                padding-bottom: 100px;
+            }
+
+            .packages-intro {
+                margin-bottom: 40px;
+            }
+
+            .option {
+                grid-template-columns: 1fr auto;
+                gap: 15px;
+
+                padding: 30px 0;
+            }
+
+            .option:hover,
+            .option.selected {
+                padding-left: 14px;
+                padding-right: 14px;
+            }
+
+            .option-title {
+                font-size: 48px;
+            }
+
+            .option-copy {
+                margin-top: 16px;
+                font-size: 19px;
+            }
+
+            .option-price {
+                font-size: 28px;
+            }
+
+            .email-section {
+                min-height: 90vh;
+                padding-top: 120px;
+            }
+
+            .email-label {
+                margin-bottom: 50px;
+                font-size: 54px;
+            }
+
+            .email-input {
+                font-size: 25px;
+            }
+
+            .continue {
+                margin-top: 45px;
+                font-size: 32px;
+            }
+
+            .pick-footer {
+                min-height: 35vh;
+                padding: 80px 20px 30px;
+            }
+
+            .footer-copy {
+                font-size: 38px;
+            }
         }
     </style>
 </head>
 
 <body>
 
-<main>
+<div class="pick-page">
+
+    <!-- TOP -->
+    <div class="pick-top">
+        <a href="index.html" class="back">← back</a>
+        <span class="tiny">tiny photo club</span>
+    </div>
 
 
     <!-- INTRO -->
+    <section class="pick-section intro">
 
-    <section class="section">
-
-        <div class="copy">
-
-            pick your summer.
-
-        </div>
+        <h1>
+            pick<br>
+            your<br>
+            summer.
+        </h1>
 
         <p>
             how many photos do you want
             to make real?
         </p>
 
-    </section>
-
-
-    <!-- 12 PHOTOS -->
-
-    <section class="section">
-
-        <button
-            class="plan"
-            type="button"
-            data-pack="12"
-            data-price="18">
-
-            <h2>
-                12 photos
-            </h2>
-
-            <p>
-                the ones you really
-                don't want to forget.
-            </p>
-
-            <strong>
-                €18
-            </strong>
-
-        </button>
+        <div class="scroll-note">
+            ↓ choose your pile
+        </div>
 
     </section>
 
 
-    <!-- 36 PHOTOS -->
+    <!-- PACKAGES -->
+    <section class="pick-section packages">
 
-    <section class="section">
+        <div class="packages-intro">
+            <p>one summer. your choice.</p>
+        </div>
 
-        <button
-            class="plan"
-            type="button"
-            data-pack="36"
-            data-price="36">
+        <div class="options">
 
-            <h2>
-                36 photos
-            </h2>
+            <!-- 12 -->
+            <button
+                class="option"
+                type="button"
+                data-pack="12"
+            >
 
-            <p>
-                when narrowing it down
-                feels impossible.
-            </p>
+                <div class="option-main">
 
-            <strong>
-                €36
-            </strong>
+                    <span class="option-number">
+                        the little one
+                    </span>
 
-        </button>
+                    <h2 class="option-title">
+                        12 photos
+                    </h2>
+
+                    <p class="option-copy">
+                        the ones you really
+                        don't want to forget.
+                    </p>
+
+                </div>
+
+                <div class="option-price">
+                    €18
+                </div>
+
+            </button>
+
+
+            <!-- 36 -->
+            <button
+                class="option"
+                type="button"
+                data-pack="36"
+            >
+
+                <div class="option-main">
+
+                    <span class="option-number">
+                        the big one
+                    </span>
+
+                    <h2 class="option-title">
+                        36 photos
+                    </h2>
+
+                    <p class="option-copy">
+                        when narrowing it down
+                        feels impossible.
+                    </p>
+
+                </div>
+
+                <div class="option-price">
+                    €36
+                </div>
+
+            </button>
+
+        </div>
 
     </section>
 
 
     <!-- EMAIL -->
+    <section class="pick-section email-section">
 
-    <section class="section">
+        <h2 class="email-label">
+            where should we
+            send the details?
+        </h2>
 
-        <div class="copy">
+        <div class="email-form">
 
-            where should we send the details?
+            <input
+                class="email-input"
+                type="email"
+                id="email"
+                name="email"
+                placeholder="your email"
+                autocomplete="email"
+                required
+            >
+
+            <button
+                id="continue-button"
+                class="continue"
+                type="button"
+            >
+                upload your photos →
+            </button>
 
         </div>
 
-        <input
-            type="email"
-            id="email"
-            name="email"
-            placeholder="your email"
-            autocomplete="email"
-            required>
-
     </section>
 
 
-    <!-- CONTINUE -->
+    <!-- FOOTER -->
+    <section class="pick-footer">
 
-    <section class="section">
-
-        <button
-            id="continue-button"
-            class="cta"
-            type="button">
-
-            upload your photos →
-
-        </button>
+        <div class="footer-copy">
+            your summer,
+            but real.
+        </div>
 
     </section>
 
-
-</main>
+</div>
 
 
 <script>
+    const options = document.querySelectorAll(".option");
+    const emailInput = document.querySelector("#email");
+    const continueButton = document.querySelector("#continue-button");
 
-const plans =
-    document.querySelectorAll(".plan");
+    let selectedPack = null;
 
-const emailInput =
-    document.querySelector("#email");
+    options.forEach(option => {
 
-const continueButton =
-    document.querySelector("#continue-button");
+        option.addEventListener("click", () => {
 
+            options.forEach(item => {
+                item.classList.remove("selected");
+            });
 
-let selectedPack = null;
+            option.classList.add("selected");
 
-
-/* -------------------------- */
-/* PACK SELECTION */
-/* -------------------------- */
-
-plans.forEach(plan => {
-
-    plan.addEventListener("click", () => {
-
-        plans.forEach(p => {
-
-            p.classList.remove("selected");
+            selectedPack = option.dataset.pack;
 
         });
 
-        plan.classList.add("selected");
-
-        selectedPack =
-            plan.dataset.pack;
-
     });
 
-});
 
+    continueButton.addEventListener("click", () => {
 
-/* -------------------------- */
-/* CONTINUE */
-/* -------------------------- */
-
-continueButton.addEventListener(
-    "click",
-    () => {
-
-        const email =
-            emailInput.value.trim();
-
+        const email = emailInput.value.trim();
 
         if (
             !selectedPack ||
             !email ||
             !emailInput.checkValidity()
         ) {
-
-            alert(
-                "choose a pack and enter your email ♡"
-            );
-
+            alert("choose a pack and enter your email ♡");
             return;
-
         }
-
 
         sessionStorage.setItem(
             "tpc_pack",
             selectedPack
         );
 
-
         sessionStorage.setItem(
             "tpc_email",
             email
         );
 
+        window.location.href = "upload.html";
 
-        window.location.href =
-            "upload.html";
-
-    }
-);
-
+    });
 </script>
 
-
 </body>
-
 </html>
