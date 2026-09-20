@@ -8,7 +8,222 @@
 
 <title>checkout • tiny photo club</title>
 
-<link rel="stylesheet" href="style.css">
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    background: #fff;
+    color: #000;
+    font-family: "Arial Narrow", Arial, sans-serif;
+    text-transform: lowercase;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+.checkout {
+    min-height: 100vh;
+    padding: 30px 7vw 100px;
+}
+
+.back-button {
+    display: inline-block;
+    margin-bottom: 90px;
+    color: #000;
+    text-decoration: none;
+    font-size: 1.1rem;
+}
+
+h1,
+h2 {
+    font-weight: 400;
+    letter-spacing: -.06em;
+    line-height: .88;
+    text-shadow:
+        0 0 .5px rgba(0,0,0,.55),
+        0 0 1px rgba(0,0,0,.12);
+}
+
+h1 {
+    margin: 0 0 25px;
+    font-size: clamp(5rem, 13vw, 11rem);
+    max-width: 1000px;
+}
+
+.intro {
+    font-size: 1.5rem;
+    line-height: 1.2;
+    margin: 0 0 90px;
+}
+
+.checkout-section {
+    width: 100%;
+    max-width: 900px;
+    margin-bottom: 75px;
+}
+
+.section-label {
+    margin: 0 0 25px;
+    font-size: 1.1rem;
+}
+
+.summary {
+    border-top: 1px solid #000;
+    border-bottom: 1px solid #000;
+    padding: 25px 0;
+    font-size: 1.5rem;
+    line-height: 1.2;
+}
+
+.summary strong {
+    font-weight: 400;
+}
+
+.delivery-option {
+    border-top: 1px solid #000;
+    padding: 25px 0;
+    cursor: pointer;
+}
+
+.delivery-option:last-child {
+    border-bottom: 1px solid #000;
+}
+
+.delivery-option input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.delivery-option-content {
+    display: flex;
+    justify-content: space-between;
+    gap: 30px;
+    align-items: flex-start;
+}
+
+.delivery-option h2 {
+    margin: 0 0 8px;
+    font-size: 2.2rem;
+}
+
+.delivery-option p {
+    margin: 0;
+    font-size: 1.15rem;
+    line-height: 1.3;
+}
+
+.delivery-price {
+    font-size: 1.2rem;
+    white-space: nowrap;
+}
+
+.delivery-option.selected {
+    background: #000;
+    color: #fff;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.email-section label {
+    display: block;
+    margin-bottom: 12px;
+    font-size: 1.1rem;
+}
+
+.email-section input {
+    width: 100%;
+    max-width: 600px;
+    border: 0;
+    border-bottom: 1px solid #000;
+    border-radius: 0;
+    padding: 12px 0;
+    font-family: inherit;
+    font-size: 1.5rem;
+    outline: none;
+    background: transparent;
+    text-transform: lowercase;
+}
+
+.email-section input:focus {
+    border-bottom: 2px solid #000;
+}
+
+.total {
+    border-top: 1px solid #000;
+    padding-top: 25px;
+    display: flex;
+    justify-content: space-between;
+    gap: 30px;
+    max-width: 600px;
+    font-size: 1.5rem;
+}
+
+#checkout-button {
+    margin-top: 35px;
+    border: 1px solid #000;
+    background: #000;
+    color: #fff;
+    padding: 18px 25px;
+    font-family: inherit;
+    font-size: 1.2rem;
+    text-transform: lowercase;
+    cursor: pointer;
+}
+
+#checkout-button:hover {
+    background: #fff;
+    color: #000;
+}
+
+@media (max-width: 600px) {
+
+    .checkout {
+        padding: 25px 20px 80px;
+    }
+
+    .back-button {
+        margin-bottom: 70px;
+    }
+
+    h1 {
+        font-size: clamp(4rem, 20vw, 7rem);
+    }
+
+    .intro {
+        margin-bottom: 65px;
+    }
+
+    .checkout-section {
+        margin-bottom: 60px;
+    }
+
+    .delivery-option-content {
+        gap: 15px;
+    }
+
+    .delivery-option h2 {
+        font-size: 1.8rem;
+    }
+
+    .delivery-option p {
+        font-size: 1.05rem;
+    }
+
+    .delivery-price {
+        font-size: 1rem;
+    }
+
+}
+
+</style>
 
 </head>
 
@@ -16,108 +231,266 @@
 
 <main class="checkout">
 
-<button class="back-button" type="button" onclick="window.location.href='upload.html';">
+<a href="upload.html" class="back-button">
     ← back
-</button>
+</a>
 
 <h1>
-
-your first envelope.
-
+    almost there.
 </h1>
 
-<p>
-
-twelve tiny prints.
-
-<br>
-
-delivered every month.
-
+<p class="intro">
+    your photos are ready.
+    <br>
+    now choose how you'd like to get them.
 </p>
 
-<section class="plans">
 
-<div class="plan" data-price="18">
+<!-- ORDER SUMMARY -->
 
-<h2>
-monthly
-</h2>
+<section class="checkout-section">
 
-<p>
-12 photos
-<br>
-€18 / month
-</p>
+    <p class="section-label">
+        your order
+    </p>
 
-</div>
+    <div class="summary">
+
+        <strong id="pack-summary">
+            12 tiny prints
+        </strong>
+
+        <span id="print-price">
+            €18
+        </span>
+
+    </div>
+
+</section>
 
 
-<div class="plan selected" data-price="45">
+<!-- DELIVERY -->
 
-<h2>
-three months
-</h2>
+<section class="checkout-section">
 
-<p>
-12 photos / month
-<br>
-€45 / 3 months
-</p>
+    <p class="section-label">
+        how you'll get them
+    </p>
 
-<div class="save">
-save €9
-</div>
+    <label class="delivery-option selected">
 
-</div>
+        <input
+            type="radio"
+            name="delivery"
+            value="gallery"
+            checked>
+
+        <div class="delivery-option-content">
+
+            <div>
+
+                <h2>
+                    gallery pickup
+                </h2>
+
+                <p>
+                    free at an art gallery in Santos
+                    <br>
+                    Sept 22–Oct 1
+                </p>
+
+            </div>
+
+            <div class="delivery-price">
+                free
+            </div>
+
+        </div>
+
+    </label>
+
+
+    <label class="delivery-option">
+
+        <input
+            type="radio"
+            name="delivery"
+            value="nosmallphotos">
+
+        <div class="delivery-option-content">
+
+            <div>
+
+                <h2>
+                    No Small Photos
+                </h2>
+
+                <p>
+                    free for Tiny Photo Club customers
+                    <br>
+                    Sept 26, in the park
+                </p>
+
+            </div>
+
+            <div class="delivery-price">
+                free
+            </div>
+
+        </div>
+
+    </label>
+
+
+    <label class="delivery-option">
+
+        <input
+            type="radio"
+            name="delivery"
+            value="mail">
+
+        <div class="delivery-option-content">
+
+            <div>
+
+                <h2>
+                    mail
+                </h2>
+
+                <p>
+                    regular post
+                    <br>
+                    Portugal only
+                </p>
+
+            </div>
+
+            <div class="delivery-price">
+                €2
+            </div>
+
+        </div>
+
+    </label>
 
 </section>
 
 
 <!-- EMAIL -->
 
-<div class="email-section">
+<section class="checkout-section email-section">
 
-<label for="email">
-your email
-</label>
+    <label for="email">
+        your email
+    </label>
 
-<input
-    type="email"
-    id="email"
-    name="email"
-    placeholder="you@example.com"
-    autocomplete="email"
-    required
->
+    <input
+        type="email"
+        id="email"
+        name="email"
+        placeholder="you@example.com"
+        autocomplete="email"
+        required>
 
-</div>
-
-
-<!-- SUMMARY -->
-
-<div class="summary">
-
-selected plan
-
-<span id="price">
-€45
-</span>
-
-</div>
+</section>
 
 
-<button id="checkout-button" type="button">
+<!-- TOTAL -->
 
-continue to checkout →
+<section class="checkout-section">
 
-</button>
+    <div class="total">
+
+        <span>
+            total
+        </span>
+
+        <span id="total-price">
+            €18
+        </span>
+
+    </div>
+
+    <button
+        id="checkout-button"
+        type="button">
+
+        pay €18 →
+
+    </button>
+
+</section>
 
 </main>
 
 
+<script>
+
+const pack = parseInt(
+    sessionStorage.getItem("tpc_pack") || "12",
+    10
+);
+
+const printPrice = pack === 36 ? 36 : 18;
+
+const packSummary = document.getElementById("pack-summary");
+const printPriceElement = document.getElementById("print-price");
+const totalPrice = document.getElementById("total-price");
+const checkoutButton = document.getElementById("checkout-button");
+
+packSummary.textContent =
+    pack + " tiny prints";
+
+printPriceElement.textContent =
+    "€" + printPrice;
+
+function updateTotal() {
+
+    const delivery =
+        document.querySelector(
+            'input[name="delivery"]:checked'
+        ).value;
+
+    const deliveryFee =
+        delivery === "mail" ? 2 : 0;
+
+    const total =
+        printPrice + deliveryFee;
+
+    totalPrice.textContent =
+        "€" + total;
+
+    checkoutButton.textContent =
+        "pay €" + total + " →";
+}
+
+document
+    .querySelectorAll(".delivery-option")
+    .forEach(option => {
+
+        option.addEventListener("click", () => {
+
+            document
+                .querySelectorAll(".delivery-option")
+                .forEach(item => {
+                    item.classList.remove("selected");
+                });
+
+            option.classList.add("selected");
+
+            option.querySelector("input").checked = true;
+
+            updateTotal();
+
+        });
+
+    });
+
+updateTotal();
+
+</script>
+
 <script src="checkout.js"></script>
 
 </body>
-
 </html>
