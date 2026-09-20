@@ -5,6 +5,20 @@
 
 
 /* ------------------------------ */
+/* Package */
+/* ------------------------------ */
+
+const selectedPack =
+    parseInt(
+        sessionStorage.getItem("tpc_pack") || "12",
+        10
+    );
+
+const TARGET_COUNT =
+    selectedPack === 36 ? 36 : 12;
+
+
+/* ------------------------------ */
 /* Elements */
 /* ------------------------------ */
 
@@ -62,10 +76,6 @@ function openDatabase() {
                     request.result;
 
 
-                /* -------------------------- */
-                /* Photos */
-                /* -------------------------- */
-
                 if (
                     !db.objectStoreNames.contains(
                         "photos"
@@ -82,10 +92,6 @@ function openDatabase() {
 
                 }
 
-
-                /* -------------------------- */
-                /* Selection */
-                /* -------------------------- */
 
                 if (
                     !db.objectStoreNames.contains(
@@ -159,14 +165,6 @@ async function savePhoto(file) {
                     STORE_NAME
                 );
 
-
-            /*
-               Store the actual Blob instead
-               of relying on a Blob URL.
-
-               This is safer across Safari,
-               Chrome, and mobile browsers.
-            */
 
             store.put({
 
@@ -465,10 +463,6 @@ let selectedPhotos = [];
 
 async function preparePhoto(file) {
 
-    /*
-       First handle HEIC / HEIF.
-    */
-
     const isHEIC =
         file.type === "image/heic" ||
         file.type === "image/heif" ||
@@ -522,10 +516,6 @@ async function preparePhoto(file) {
     }
 
 
-    /*
-       Load the image so we can resize it.
-    */
-
     const image =
         new Image();
 
@@ -553,13 +543,6 @@ async function preparePhoto(file) {
             }
         );
 
-
-        /*
-           Keep the original proportions.
-
-           1400px is more than enough for
-           an 8 × 8 cm physical print.
-        */
 
         const MAX_SIZE =
             1400;
@@ -598,11 +581,6 @@ async function preparePhoto(file) {
 
         }
 
-
-        /*
-           Draw the image into a canvas
-           and create a JPEG Blob.
-        */
 
         const canvas =
             document.createElement(
@@ -728,19 +706,11 @@ async function addUploadedFile(file) {
     }
 
 
-    /*
-       Store the prepared JPEG Blob.
-    */
-
     const id =
         await savePhoto(
             photoBlob
         );
 
-
-    /*
-       Create the photo-bank preview.
-    */
 
     const photo =
         document.createElement(
@@ -830,11 +800,6 @@ upload.addEventListener(
         }
 
 
-        /*
-           Reset input so the same file
-           can be selected again.
-        */
-
         upload.value =
             "";
 
@@ -850,7 +815,7 @@ function addPrint(photo) {
 
     if (
         selectedPhotos.length >=
-        12
+        TARGET_COUNT
     ) {
 
         showFullMessage();
@@ -901,7 +866,7 @@ async function updateUI() {
 
 
     counter.textContent =
-        `${selectedPhotos.length} / 12`;
+        `${selectedPhotos.length} / ${TARGET_COUNT}`;
 
 
     strip.innerHTML =
@@ -946,11 +911,6 @@ async function updateUI() {
                 "img"
             );
 
-
-        /*
-           Recreate the preview URL
-           from the stored Blob.
-        */
 
         const previewUrl =
             URL.createObjectURL(
@@ -1023,7 +983,7 @@ async function updateUI() {
 
     if (
         selectedPhotos.length ===
-        12
+        TARGET_COUNT
     ) {
 
         showFullMessage();
@@ -1055,7 +1015,7 @@ async function updateUI() {
 
 
 /* ------------------------------ */
-/* Your Dozen Is Full */
+/* Prints Are Full */
 /* ------------------------------ */
 
 function showFullMessage() {
@@ -1067,8 +1027,14 @@ function showFullMessage() {
     }
 
 
+    const word =
+        TARGET_COUNT === 36
+            ? "36 prints"
+            : "12 prints";
+
+
     dozenMessage.textContent =
-        "your dozen is full ♡ ↓ scroll down to keep going";
+        `your ${word} are full ♡ ↓ scroll down to keep going`;
 
 }
 
@@ -1290,6 +1256,26 @@ async function restorePhotoBank() {
             savedSelection.photos;
 
 
+        /*
+           If the user changed packages,
+           don't allow an old selection to
+           exceed the new package size.
+        */
+
+        if (
+            selectedPhotos.length >
+            TARGET_COUNT
+        ) {
+
+            selectedPhotos =
+                selectedPhotos.slice(
+                    0,
+                    TARGET_COUNT
+                );
+
+        }
+
+
         await updateUI();
 
     }
@@ -1381,7 +1367,7 @@ if (continueButton) {
 
             if (
                 selectedPhotos.length !==
-                12
+                TARGET_COUNT
             ) {
 
                 return;
