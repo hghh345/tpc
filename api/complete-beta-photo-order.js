@@ -166,7 +166,7 @@ module.exports = async (req, res) => {
             } =
                 await supabase
                     .storage
-                    .from("customer photos")
+                    .from("customer-photos")
                     .upload(
                         storagePath,
                         buffer,
