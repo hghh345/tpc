@@ -1,16 +1,13 @@
 <!DOCTYPE html>
 
-<html lang="en">
-<head>
+<html lang="en"> <head>
 
-```
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>pick your summer — tiny photo club</title>
 
 <link rel="stylesheet" href="https://www.tinyphoto.club/style.css">
-```
 
 </head>
 
@@ -18,7 +15,6 @@
 
 <main>
 
-```
 <!-- INTRO -->
 
 <section class="section pick-intro">
@@ -124,136 +120,9 @@
     </button>
 
 </section>
-```
 
 </main>
 
-<script>
+<script> const plans = document.querySelectorAll(".plan"); const emailInput = document.querySelector("#email"); const continueButton = document.querySelector("#continue-button"); let selectedPack = null; /* -------------------------- */ /* PACK SELECTION */ /* -------------------------- */ plans.forEach(plan => { plan.addEventListener("click", () => { plans.forEach(p => { p.classList.remove("selected"); }); plan.classList.add("selected"); selectedPack = plan.dataset.pack; checkReady(); }); }); /* -------------------------- */ /* EMAIL */ /* -------------------------- */ emailInput.addEventListener("input", () => { checkReady(); }); /* -------------------------- */ /* CHECK READY */ /* -------------------------- */ function checkReady() { const email = emailInput.value.trim(); const validEmail = emailInput.checkValidity(); if ( selectedPack && email && validEmail ) { continueButton.disabled = false; } else { continueButton.disabled = true; } } /* -------------------------- */ /* CONTINUE */ /* -------------------------- */ continueButton.addEventListener( "click", () => { const email = emailInput.value.trim(); if ( !selectedPack || !email || !emailInput.checkValidity() ) { return; } /* Save the customer's choice for the next page. */ sessionStorage.setItem( "tpc_pack", selectedPack ); sessionStorage.setItem( "tpc_email", email ); window.location.href = "upload.html"; } ); </script>
 
-const plans =
-    document.querySelectorAll(".plan");
-
-const emailInput =
-    document.querySelector("#email");
-
-const continueButton =
-    document.querySelector("#continue-button");
-
-
-let selectedPack = null;
-
-
-/* -------------------------- */
-/* PACK SELECTION */
-/* -------------------------- */
-
-plans.forEach(plan => {
-
-    plan.addEventListener("click", () => {
-
-        plans.forEach(p => {
-            p.classList.remove("selected");
-        });
-
-        plan.classList.add("selected");
-
-        selectedPack =
-            plan.dataset.pack;
-
-        checkReady();
-
-    });
-
-});
-
-
-/* -------------------------- */
-/* EMAIL */
-/* -------------------------- */
-
-emailInput.addEventListener("input", () => {
-
-    checkReady();
-
-});
-
-
-/* -------------------------- */
-/* CHECK READY */
-/* -------------------------- */
-
-function checkReady() {
-
-    const email =
-        emailInput.value.trim();
-
-    const validEmail =
-        emailInput.checkValidity();
-
-    if (
-        selectedPack &&
-        email &&
-        validEmail
-    ) {
-
-        continueButton.disabled =
-            false;
-
-    } else {
-
-        continueButton.disabled =
-            true;
-
-    }
-
-}
-
-
-/* -------------------------- */
-/* CONTINUE */
-/* -------------------------- */
-
-continueButton.addEventListener(
-    "click",
-    () => {
-
-        const email =
-            emailInput.value.trim();
-
-        if (
-            !selectedPack ||
-            !email ||
-            !emailInput.checkValidity()
-        ) {
-
-            return;
-
-        }
-
-
-        /*
-           Save the customer's choice
-           for the next page.
-        */
-
-        sessionStorage.setItem(
-            "tpc_pack",
-            selectedPack
-        );
-
-        sessionStorage.setItem(
-            "tpc_email",
-            email
-        );
-
-
-        window.location.href =
-            "upload.html";
-
-    }
-);
-
-</script>
-
-</body>
-</html>
+</body> </html>
