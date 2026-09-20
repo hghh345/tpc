@@ -4,8 +4,10 @@ const pack =
         10
     );
 
+
 const emailInput =
     document.getElementById("email");
+
 
 const checkoutButton =
     document.getElementById("checkout-button");
@@ -17,6 +19,7 @@ const checkoutButton =
 
 const PRICE_12 =
     "price_1UHqVsA5iFvf2pvFl4gaGU94";
+
 
 const PRICE_36 =
     "price_1UHqWOA5iFvf2pvFnO3hENH8";
@@ -99,28 +102,6 @@ checkoutButton.addEventListener(
 
 
         /*
-           The existing upload flow creates
-           and stores the photo session ID.
-        */
-
-        const photoSessionId =
-            sessionStorage.getItem(
-                "photoSessionId"
-            );
-
-
-        if (!photoSessionId) {
-
-            alert(
-                "We couldn't find your photo session. Please go back and try again."
-            );
-
-            return;
-
-        }
-
-
-        /*
            Prevent double-clicks.
         */
 
@@ -156,9 +137,6 @@ checkoutButton.addEventListener(
 
                                 email:
                                     email,
-
-                                photoSessionId:
-                                    photoSessionId,
 
                                 packSize:
                                     pack,
