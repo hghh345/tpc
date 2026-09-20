@@ -1,41 +1,44 @@
 <!DOCTYPE html>
+<html lang="en">
 
-<html lang="en"> <head>
+<head>
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>pick your summer — tiny photo club</title>
+    <title>pick your summer — tiny photo club</title>
 
-<link rel="stylesheet" href="https://www.tinyphoto.club/style.css">
+    <link rel="stylesheet" href="https://www.tinyphoto.club/style.css">
 
 </head>
+
 
 <body>
 
 <main>
 
-<!-- INTRO -->
 
-<section class="section pick-intro">
+    <!-- INTRO -->
 
-    <h1>
-        pick your summer.
-    </h1>
+    <section class="section">
 
-    <p>
-        how many photos do you want<br>
-        to make real?
-    </p>
+        <div class="copy">
 
-</section>
+            pick your summer.
+
+        </div>
+
+        <p>
+            how many photos do you want
+            to make real?
+        </p>
+
+    </section>
 
 
-<!-- PACK OPTIONS -->
+    <!-- 12 PHOTOS -->
 
-<section class="section">
-
-    <div class="plans">
+    <section class="section">
 
         <button
             class="plan"
@@ -48,7 +51,7 @@
             </h2>
 
             <p>
-                the ones you really<br>
+                the ones you really
                 don't want to forget.
             </p>
 
@@ -58,6 +61,12 @@
 
         </button>
 
+    </section>
+
+
+    <!-- 36 PHOTOS -->
+
+    <section class="section">
 
         <button
             class="plan"
@@ -70,7 +79,7 @@
             </h2>
 
             <p>
-                when narrowing it down<br>
+                when narrowing it down
                 feels impossible.
             </p>
 
@@ -80,49 +89,136 @@
 
         </button>
 
-    </div>
-
-</section>
+    </section>
 
 
-<!-- EMAIL -->
+    <!-- EMAIL -->
 
-<section class="section email-section">
+    <section class="section">
 
-    <label for="email">
-        where should we send the details?
-    </label>
+        <div class="copy">
 
-    <input
-        type="email"
-        id="email"
-        name="email"
-        placeholder="your email"
-        autocomplete="email"
-        required
-    >
+            where should we send the details?
 
-</section>
+        </div>
+
+        <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="your email"
+            autocomplete="email"
+            required>
+
+    </section>
 
 
-<!-- CONTINUE -->
+    <!-- CONTINUE -->
 
-<section class="section">
+    <section class="section">
 
-    <button
-        id="continue-button"
-        class="cta"
-        type="button"
-        disabled>
+        <button
+            id="continue-button"
+            class="cta"
+            type="button">
 
-        upload your photos →
+            upload your photos →
 
-    </button>
+        </button>
 
-</section>
+    </section>
+
 
 </main>
 
-<script> const plans = document.querySelectorAll(".plan"); const emailInput = document.querySelector("#email"); const continueButton = document.querySelector("#continue-button"); let selectedPack = null; /* -------------------------- */ /* PACK SELECTION */ /* -------------------------- */ plans.forEach(plan => { plan.addEventListener("click", () => { plans.forEach(p => { p.classList.remove("selected"); }); plan.classList.add("selected"); selectedPack = plan.dataset.pack; checkReady(); }); }); /* -------------------------- */ /* EMAIL */ /* -------------------------- */ emailInput.addEventListener("input", () => { checkReady(); }); /* -------------------------- */ /* CHECK READY */ /* -------------------------- */ function checkReady() { const email = emailInput.value.trim(); const validEmail = emailInput.checkValidity(); if ( selectedPack && email && validEmail ) { continueButton.disabled = false; } else { continueButton.disabled = true; } } /* -------------------------- */ /* CONTINUE */ /* -------------------------- */ continueButton.addEventListener( "click", () => { const email = emailInput.value.trim(); if ( !selectedPack || !email || !emailInput.checkValidity() ) { return; } /* Save the customer's choice for the next page. */ sessionStorage.setItem( "tpc_pack", selectedPack ); sessionStorage.setItem( "tpc_email", email ); window.location.href = "upload.html"; } ); </script>
 
-</body> </html>
+<script>
+
+const plans =
+    document.querySelectorAll(".plan");
+
+const emailInput =
+    document.querySelector("#email");
+
+const continueButton =
+    document.querySelector("#continue-button");
+
+
+let selectedPack = null;
+
+
+/* -------------------------- */
+/* PACK SELECTION */
+/* -------------------------- */
+
+plans.forEach(plan => {
+
+    plan.addEventListener("click", () => {
+
+        plans.forEach(p => {
+
+            p.classList.remove("selected");
+
+        });
+
+        plan.classList.add("selected");
+
+        selectedPack =
+            plan.dataset.pack;
+
+    });
+
+});
+
+
+/* -------------------------- */
+/* CONTINUE */
+/* -------------------------- */
+
+continueButton.addEventListener(
+    "click",
+    () => {
+
+        const email =
+            emailInput.value.trim();
+
+
+        if (
+            !selectedPack ||
+            !email ||
+            !emailInput.checkValidity()
+        ) {
+
+            alert(
+                "choose a pack and enter your email ♡"
+            );
+
+            return;
+
+        }
+
+
+        sessionStorage.setItem(
+            "tpc_pack",
+            selectedPack
+        );
+
+
+        sessionStorage.setItem(
+            "tpc_email",
+            email
+        );
+
+
+        window.location.href =
+            "upload.html";
+
+    }
+);
+
+</script>
+
+
+</body>
+
+</html>
