@@ -209,22 +209,29 @@ async function completePhotoOrder(
     photoSessionId
 ) {
 
-    const selection =
-        await getSelection();
+   const selectedPack =
+    parseInt(
+        sessionStorage.getItem("tpc_pack") || "12",
+        10
+    );
+
+const TARGET_COUNT =
+    selectedPack === 36 ? 36 : 12;
 
 
-    if (
-        !selection ||
-        !selection.photos ||
-        selection.photos.length !== 12
-    ) {
+if (
+    !selection ||
+    !selection.photos ||
+    selection.photos.length !== TARGET_COUNT
+) {
 
-        throw new Error(
-            "Your 12 selected photos could not be found."
-        );
+    throw new Error(
+        "Your " +
+        TARGET_COUNT +
+        " selected photos could not be found."
+    );
 
-    }
-
+}
 
     /*
        Count how many physical prints
