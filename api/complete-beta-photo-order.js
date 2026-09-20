@@ -268,9 +268,10 @@ module.exports = async (req, res) => {
             error
         );
 
-        return res.status(500).json({
-            error:
-                "Unable to complete beta photo order"
-        });
+       return res.status(500).json({
+    error:
+        error.message ||
+        "Unable to complete beta photo order"
+});
     }
 };
