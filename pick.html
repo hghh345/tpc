@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+
+```
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>pick your summer — tiny photo club</title>
+
+<link rel="stylesheet" href="https://www.tinyphoto.club/style.css">
+```
+
+</head>
+
+<body>
+
+<main>
+
+```
+<!-- INTRO -->
+
+<section class="section pick-intro">
+
+    <h1>
+        pick your summer.
+    </h1>
+
+    <p>
+        how many photos do you want<br>
+        to make real?
+    </p>
+
+</section>
+
+
+<!-- PACK OPTIONS -->
+
+<section class="section">
+
+    <div class="plans">
+
+        <button
+            class="plan"
+            type="button"
+            data-pack="12"
+            data-price="18">
+
+            <h2>
+                12 photos
+            </h2>
+
+            <p>
+                the ones you really<br>
+                don't want to forget.
+            </p>
+
+            <strong>
+                €18
+            </strong>
+
+        </button>
+
+
+        <button
+            class="plan"
+            type="button"
+            data-pack="36"
+            data-price="36">
+
+            <h2>
+                36 photos
+            </h2>
+
+            <p>
+                when narrowing it down<br>
+                feels impossible.
+            </p>
+
+            <strong>
+                €36
+            </strong>
+
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- EMAIL -->
+
+<section class="section email-section">
+
+    <label for="email">
+        where should we send the details?
+    </label>
+
+    <input
+        type="email"
+        id="email"
+        name="email"
+        placeholder="your email"
+        autocomplete="email"
+        required
+    >
+
+</section>
+
+
+<!-- CONTINUE -->
+
+<section class="section">
+
+    <button
+        id="continue-button"
+        class="cta"
+        type="button"
+        disabled>
+
+        upload your photos →
+
+    </button>
+
+</section>
+```
+
+</main>
+
+<script>
+
+const plans =
+    document.querySelectorAll(".plan");
+
+const emailInput =
+    document.querySelector("#email");
+
+const continueButton =
+    document.querySelector("#continue-button");
+
+
+let selectedPack = null;
+
+
+/* -------------------------- */
+/* PACK SELECTION */
+/* -------------------------- */
+
+plans.forEach(plan => {
+
+    plan.addEventListener("click", () => {
+
+        plans.forEach(p => {
+            p.classList.remove("selected");
+        });
+
+        plan.classList.add("selected");
+
+        selectedPack =
+            plan.dataset.pack;
+
+        checkReady();
+
+    });
+
+});
+
+
+/* -------------------------- */
+/* EMAIL */
+/* -------------------------- */
+
+emailInput.addEventListener("input", () => {
+
+    checkReady();
+
+});
+
+
+/* -------------------------- */
+/* CHECK READY */
+/* -------------------------- */
+
+function checkReady() {
+
+    const email =
+        emailInput.value.trim();
+
+    const validEmail =
+        emailInput.checkValidity();
+
+    if (
+        selectedPack &&
+        email &&
+        validEmail
+    ) {
+
+        continueButton.disabled =
+            false;
+
+    } else {
+
+        continueButton.disabled =
+            true;
+
+    }
+
+}
+
+
+/* -------------------------- */
+/* CONTINUE */
+/* -------------------------- */
+
+continueButton.addEventListener(
+    "click",
+    () => {
+
+        const email =
+            emailInput.value.trim();
+
+        if (
+            !selectedPack ||
+            !email ||
+            !emailInput.checkValidity()
+        ) {
+
+            return;
+
+        }
+
+
+        /*
+           Save the customer's choice
+           for the next page.
+        */
+
+        sessionStorage.setItem(
+            "tpc_pack",
+            selectedPack
+        );
+
+        sessionStorage.setItem(
+            "tpc_email",
+            email
+        );
+
+
+        window.location.href =
+            "upload.html";
+
+    }
+);
+
+</script>
+
+</body>
+</html>
