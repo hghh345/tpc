@@ -27,8 +27,10 @@ module.exports = async (req, res) => {
     try {
 
         const {
-            sessionId,
-            photos
+            priceId,
+            email,
+            packSize,
+            delivery
         } = req.body;
 
 
@@ -37,55 +39,116 @@ module.exports = async (req, res) => {
         /* -------------------------- */
 
         if (
-            !sessionId ||
-            !photos ||
-            !Array.isArray(photos)
+            !priceId ||
+            !email ||
+            !packSize ||
+            !delivery
         ) {
 
             return res.status(400).json({
-                error: "Missing order information"
+                error:
+                    "Missing order information"
             });
 
         }
 
 
         /* -------------------------- */
-        /* Verify Stripe payment */
+        /* Validate price */
         /* -------------------------- */
 
-        const session =
-            await stripe.checkout.sessions.retrieve(
-                sessionId
-            );
+        const allowedPrices = [
+
+            "price_1UHqVsA5iFvf2pvFl4gaGU94",
+
+            "price_1UHqWOA5iFvf2pvFnO3hENH8"
+
+        ];
 
 
         if (
-            session.payment_status !== "paid"
+            !allowedPrices.includes(priceId)
         ) {
 
             return res.status(400).json({
-                error: "Payment has not been completed"
+                error:
+                    "Invalid price"
             });
 
         }
 
 
         /* -------------------------- */
-        /* Find beta order */
+        /* Validate pack */
         /* -------------------------- */
 
-        const betaOrderId =
-            session.metadata?.beta_order_id;
+        const expectedPrice =
+            Number(packSize) === 36
+                ? "price_1UHqWOA5iFvf2pvFnO3hENH8"
+                : "price_1UHqVsA5iFvf2pvFl4gaGU94";
 
 
-        if (!betaOrderId) {
+        if (
+            priceId !== expectedPrice
+        ) {
 
             return res.status(400).json({
-                error: "No beta order found"
+                error:
+                    "Price does not match pack size"
             });
 
         }
 
+
+        /* -------------------------- */
+        /* Validate delivery */
+        /* -------------------------- */
+
+        const allowedDeliveries = [
+
+            "gallery",
+
+            "nosmallphotos",
+
+            "mail"
+
+        ];
+
+
+        if (
+            !allowedDeliveries.includes(delivery)
+        ) {
+
+            return res.status(400).json({
+                error:
+                    "Invalid delivery method"
+            });
+
+        }
+
+
+        /* -------------------------- */
+        /* Calculate total */
+        /* -------------------------- */
+
+        let amount =
+            Number(packSize) === 36
+                ? 3600
+                : 1800;
+
+
+        if (
+            delivery === "mail"
+        ) {
+
+            amount += 200;
+
+        }
+
+
+        /* -------------------------- */
+        /* Create beta order */
+        /* -------------------------- */
 
         const {
             data: betaOrder,
@@ -93,11 +156,25 @@ module.exports = async (req, res) => {
         } =
             await supabase
                 .from("beta_orders")
-                .select("*")
-                .eq(
-                    "id",
-                    betaOrderId
-                )
+                .insert({
+
+                    email:
+                        email,
+
+                    pack_size:
+                        Number(packSize),
+
+                    delivery:
+                        delivery,
+
+                    amount:
+                        amount,
+
+                    status:
+                        "pending"
+
+                })
+                .select()
                 .single();
 
 
@@ -109,218 +186,49 @@ module.exports = async (req, res) => {
 
 
         /* -------------------------- */
-        /* Prevent duplicate orders */
+        /* Stripe line items */
         /* -------------------------- */
 
-        if (
-            betaOrder.status === "paid" ||
-            betaOrder.status === "ready"
-        ) {
+        const lineItems = [
 
-            return res.status(200).json({
+            {
 
-                success:
-                    true,
-
-                message:
-                    "Order already completed."
-
-            });
-
-        }
-
-
-        /* -------------------------- */
-        /* Validate pack size */
-        /* -------------------------- */
-
-        const targetCount =
-            Number(betaOrder.pack_size);
-
-
-        const totalPrints =
-            photos.reduce(
-                (total, photo) =>
-                    total +
-                    Number(
-                        photo.quantity || 0
-                    ),
-                0
-            );
-
-
-        if (
-            totalPrints !== targetCount
-        ) {
-
-            return res.status(400).json({
-
-                error:
-                    `Exactly ${targetCount} prints are required.`
-
-            });
-
-        }
-
-
-        /* -------------------------- */
-        /* Upload photos */
-        /* -------------------------- */
-
-        const uploadedPhotos = [];
-
-
-        for (
-            const photo
-            of photos
-        ) {
-
-            if (
-                !photo.id ||
-                !photo.data
-            ) {
-
-                throw new Error(
-                    "Invalid photo information"
-                );
-
-            }
-
-
-            const quantity =
-                Number(
-                    photo.quantity || 0
-                );
-
-
-            if (
-                quantity < 1
-            ) {
-
-                throw new Error(
-                    "Invalid photo quantity"
-                );
-
-            }
-
-
-            /* -------------------------- */
-            /* Convert base64 → Buffer */
-            /* -------------------------- */
-
-            const matches =
-                photo.data.match(
-                    /^data:(.+);base64,(.+)$/
-                );
-
-
-            if (!matches) {
-
-                throw new Error(
-                    "Invalid photo data"
-                );
-
-            }
-
-
-            const contentType =
-                matches[1];
-
-
-            const base64Data =
-                matches[2];
-
-
-            const buffer =
-                Buffer.from(
-                    base64Data,
-                    "base64"
-                );
-
-
-            /* -------------------------- */
-            /* Storage path */
-            /* -------------------------- */
-
-            const extension =
-                contentType.split("/")[1] ||
-                "jpg";
-
-
-            const storagePath =
-                `beta/${betaOrder.id}/${photo.id}.${extension}`;
-
-
-            /* -------------------------- */
-            /* Upload to Supabase Storage */
-            /* -------------------------- */
-
-            const {
-                error: uploadError
-            } =
-                await supabase
-                    .storage
-                    .from("customer photos")
-                    .upload(
-                        storagePath,
-                        buffer,
-                        {
-                            contentType:
-                                contentType,
-
-                            upsert:
-                                true
-                        }
-                    );
-
-
-            if (uploadError) {
-
-                throw uploadError;
-
-            }
-
-
-            /* -------------------------- */
-            /* Create beta photo row */
-            /* -------------------------- */
-
-            const {
-                data: betaPhoto,
-                error: betaPhotoError
-            } =
-                await supabase
-                    .from("beta_photos")
-                    .insert({
-
-                        beta_order_id:
-                            betaOrder.id,
-
-                        photo_id:
-                            photo.id,
-
-                        storage_path:
-                            storagePath
-
-                    })
-                    .select()
-                    .single();
-
-
-            if (betaPhotoError) {
-
-                throw betaPhotoError;
-
-            }
-
-
-            uploadedPhotos.push({
-
-                betaPhoto:
-                    betaPhoto,
+                price:
+                    priceId,
 
                 quantity:
-                    quantity
+                    1
+
+            }
+
+        ];
+
+
+        if (
+            delivery === "mail"
+        ) {
+
+            lineItems.push({
+
+                price_data: {
+
+                    currency:
+                        "eur",
+
+                    product_data: {
+
+                        name:
+                            "Portugal postage"
+
+                    },
+
+                    unit_amount:
+                        200
+
+                },
+
+                quantity:
+                    1
 
             });
 
@@ -328,44 +236,67 @@ module.exports = async (req, res) => {
 
 
         /* -------------------------- */
-        /* Create selected photo rows */
+        /* Create Stripe session */
         /* -------------------------- */
 
-        for (
-            const uploadedPhoto
-            of uploadedPhotos
-        ) {
+        const session =
+            await stripe.checkout.sessions.create({
 
-            const {
-                error: selectedError
-            } =
-                await supabase
-                    .from("beta_selected_photos")
-                    .insert({
+                mode:
+                    "payment",
 
-                        beta_order_id:
-                            betaOrder.id,
-
-                        beta_photo_id:
-                            uploadedPhoto.betaPhoto.id,
-
-                        quantity:
-                            uploadedPhoto.quantity
-
-                    });
+                customer_email:
+                    email,
 
 
-            if (selectedError) {
+                metadata: {
 
-                throw selectedError;
+                    order_type:
+                        "summer_experiment",
 
-            }
+                    beta_order_id:
+                        betaOrder.id,
 
-        }
+                    pack_size:
+                        String(packSize),
+
+                    delivery:
+                        delivery
+
+                },
+
+
+                line_items:
+                    lineItems,
+
+
+                ...(delivery === "mail"
+                    ? {
+
+                        shipping_address_collection: {
+
+                            allowed_countries: [
+                                "PT"
+                            ]
+
+                        }
+
+                    }
+                    : {}),
+
+
+                success_url:
+                    "https://tinyphoto.club/success.html?session_id={CHECKOUT_SESSION_ID}",
+
+
+                cancel_url:
+                    "https://tinyphoto.club/checkout.html"
+
+            });
 
 
         /* -------------------------- */
-        /* Mark order ready */
+        /* Save Stripe session ID */
         /* -------------------------- */
 
         const {
@@ -375,8 +306,8 @@ module.exports = async (req, res) => {
                 .from("beta_orders")
                 .update({
 
-                    status:
-                        "ready"
+                    stripe_session_id:
+                        session.id
 
                 })
                 .eq(
@@ -393,22 +324,13 @@ module.exports = async (req, res) => {
 
 
         /* -------------------------- */
-        /* Success */
+        /* Return Stripe URL */
         /* -------------------------- */
 
         return res.status(200).json({
 
-            success:
-                true,
-
-            betaOrderId:
-                betaOrder.id,
-
-            photosUploaded:
-                uploadedPhotos.length,
-
-            totalPrints:
-                totalPrints
+            url:
+                session.url
 
         });
 
@@ -418,7 +340,7 @@ module.exports = async (req, res) => {
     catch (error) {
 
         console.error(
-            "Complete beta photo order error:",
+            "Beta checkout error:",
             error
         );
 
@@ -426,7 +348,7 @@ module.exports = async (req, res) => {
         return res.status(500).json({
 
             error:
-                "Unable to complete beta photo order"
+                "Unable to create beta checkout session"
 
         });
 
