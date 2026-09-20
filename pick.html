@@ -8,6 +8,7 @@
     <title>pick your summer — tiny photo club</title>
 
     <style>
+
         * {
             box-sizing: border-box;
         }
@@ -20,17 +21,54 @@
             margin: 0;
             background: #fff;
             color: #000;
-            font-family: Arial, Helvetica, sans-serif;
+
+            font-family: "Arial Narrow", Arial, sans-serif;
+
+            text-transform: lowercase;
+
+            overflow-x: hidden;
+
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        button,
-        input {
-            font: inherit;
+        /* -------------------- */
+        /* TYPOGRAPHY */
+        /* -------------------- */
+
+        h1,
+        h2 {
+            margin: 0;
+
+            font-weight: 400;
+
+            letter-spacing: -.06em;
+
+            line-height: .88;
+
+            text-shadow:
+                0 0 .5px rgba(0,0,0,.55),
+                0 0 1px rgba(0,0,0,.12);
         }
 
-        /* --------------------------------
-           PAGE
-        -------------------------------- */
+        h1 {
+            font-size: clamp(5rem, 13vw, 11rem);
+        }
+
+        h2 {
+            font-size: clamp(4rem, 9vw, 8rem);
+            max-width: 900px;
+        }
+
+        p {
+            font-size: 1.35rem;
+            line-height: 1.4;
+            max-width: 520px;
+        }
+
+        /* -------------------- */
+        /* PAGE */
+        /* -------------------- */
 
         .pick-page {
             min-height: 100vh;
@@ -39,18 +77,21 @@
 
         .pick-section {
             min-height: 100vh;
+
             padding: 7vw;
+
             display: flex;
             flex-direction: column;
             justify-content: center;
         }
 
-        /* --------------------------------
-           TOP
-        -------------------------------- */
+        /* -------------------- */
+        /* TOP */
+        /* -------------------- */
 
         .pick-top {
             position: absolute;
+
             top: 24px;
             left: 24px;
             right: 24px;
@@ -59,8 +100,7 @@
             justify-content: space-between;
             align-items: center;
 
-            font-size: 14px;
-            letter-spacing: -0.02em;
+            font-size: 1rem;
         }
 
         .back {
@@ -72,26 +112,16 @@
             text-decoration: underline;
         }
 
-        .tiny {
-            text-transform: lowercase;
-        }
-
-        /* --------------------------------
-           INTRO
-        -------------------------------- */
+        /* -------------------- */
+        /* INTRO */
+        /* -------------------- */
 
         .intro {
             padding-top: 12vw;
         }
 
         .intro h1 {
-            margin: 0;
             max-width: 900px;
-
-            font-size: clamp(64px, 11vw, 150px);
-            line-height: 0.82;
-            letter-spacing: -0.075em;
-            font-weight: 700;
         }
 
         .intro p {
@@ -99,22 +129,19 @@
 
             max-width: 430px;
 
-            font-size: clamp(22px, 3vw, 38px);
-            line-height: 1.05;
-            letter-spacing: -0.045em;
+            font-size: 1.5rem;
+            line-height: 1.2;
         }
 
         .scroll-note {
             margin-top: auto;
 
-            font-size: 13px;
-            text-transform: lowercase;
-            letter-spacing: -0.01em;
+            font-size: 1rem;
         }
 
-        /* --------------------------------
-           PACKAGES
-        -------------------------------- */
+        /* -------------------- */
+        /* PACKAGES */
+        /* -------------------- */
 
         .packages {
             padding-top: 12vw;
@@ -128,8 +155,7 @@
         .packages-intro p {
             margin: 0;
 
-            font-size: 14px;
-            text-transform: lowercase;
+            font-size: 1.1rem;
         }
 
         .options {
@@ -142,6 +168,7 @@
 
             display: grid;
             grid-template-columns: 1fr auto;
+
             gap: 40px;
 
             padding: 42px 0;
@@ -152,7 +179,10 @@
             border: 0;
             border-top: 1px solid #000;
 
+            font-family: inherit;
+
             text-align: left;
+
             cursor: pointer;
 
             transition:
@@ -182,13 +212,16 @@
             min-width: 0;
         }
 
-        .option-title {
-            margin: 0;
+        .option-number {
+            display: block;
 
-            font-size: clamp(42px, 6vw, 78px);
-            line-height: 0.9;
-            letter-spacing: -0.065em;
-            font-weight: 700;
+            margin-bottom: 18px;
+
+            font-size: 1rem;
+        }
+
+        .option-title {
+            font-size: clamp(4rem, 9vw, 8rem);
         }
 
         .option-copy {
@@ -196,49 +229,38 @@
 
             max-width: 430px;
 
-            font-size: clamp(18px, 2vw, 25px);
-            line-height: 1.05;
-            letter-spacing: -0.035em;
+            font-size: 1.35rem;
+            line-height: 1.2;
         }
 
         .option-price {
             align-self: start;
 
-            font-size: clamp(28px, 4vw, 48px);
+            font-size: 2rem;
+
             line-height: 1;
 
-            letter-spacing: -0.05em;
+            letter-spacing: -.04em;
+
             white-space: nowrap;
         }
 
-        .option-number {
-            display: block;
-
-            margin-bottom: 14px;
-
-            font-size: 12px;
-            letter-spacing: 0;
-            text-transform: uppercase;
-        }
-
-        /* --------------------------------
-           EMAIL
-        -------------------------------- */
+        /* -------------------- */
+        /* EMAIL */
+        /* -------------------- */
 
         .email-section {
             min-height: 85vh;
+
             align-items: flex-start;
         }
 
         .email-label {
-            margin: 0 0 40px;
+            margin: 0 0 50px;
 
             max-width: 850px;
 
-            font-size: clamp(48px, 8vw, 105px);
-            line-height: 0.86;
-            letter-spacing: -0.075em;
-            font-weight: 700;
+            font-size: clamp(4rem, 9vw, 8rem);
         }
 
         .email-form {
@@ -252,16 +274,20 @@
             padding: 18px 0;
 
             border: 0;
-            border-bottom: 2px solid #000;
+            border-bottom: 1px solid #000;
 
             border-radius: 0;
+
             outline: none;
 
             background: transparent;
             color: #000;
 
-            font-size: clamp(24px, 3vw, 38px);
-            letter-spacing: -0.04em;
+            font-family: inherit;
+
+            font-size: 1.5rem;
+
+            text-transform: lowercase;
         }
 
         .email-input::placeholder {
@@ -269,7 +295,7 @@
         }
 
         .email-input:focus {
-            border-bottom-width: 4px;
+            border-bottom: 2px solid #000;
         }
 
         .continue {
@@ -278,14 +304,17 @@
             padding: 0;
 
             border: 0;
+
             background: transparent;
             color: #000;
 
-            font-size: clamp(28px, 4vw, 48px);
+            font-family: inherit;
+
+            font-size: 1.5rem;
+
             line-height: 1;
 
-            letter-spacing: -0.055em;
-            font-weight: 700;
+            letter-spacing: -.04em;
 
             cursor: pointer;
 
@@ -294,16 +323,16 @@
 
         .continue:hover {
             text-decoration: underline;
-            text-decoration-thickness: 3px;
-            text-underline-offset: 7px;
+            text-underline-offset: 6px;
         }
 
-        /* --------------------------------
-           FOOTER
-        -------------------------------- */
+        /* -------------------- */
+        /* FOOTER */
+        /* -------------------- */
 
         .pick-footer {
             min-height: 40vh;
+
             padding: 7vw;
 
             display: flex;
@@ -314,15 +343,16 @@
         .footer-copy {
             max-width: 600px;
 
-            font-size: clamp(30px, 5vw, 65px);
-            line-height: 0.9;
-            letter-spacing: -0.065em;
-            font-weight: 700;
+            font-size: clamp(3rem, 6vw, 6rem);
+
+            line-height: .88;
+
+            letter-spacing: -.06em;
         }
 
-        /* --------------------------------
-           MOBILE
-        -------------------------------- */
+        /* -------------------- */
+        /* MOBILE */
+        /* -------------------- */
 
         @media (max-width: 600px) {
 
@@ -334,22 +364,25 @@
 
             .pick-section {
                 min-height: auto;
+
                 padding: 100px 20px;
             }
 
             .intro {
                 min-height: 100vh;
+
                 padding-top: 130px;
                 padding-bottom: 40px;
             }
 
             .intro h1 {
-                font-size: clamp(64px, 20vw, 110px);
+                font-size: clamp(5rem, 20vw, 8rem);
             }
 
             .intro p {
                 margin-top: 35px;
-                font-size: 27px;
+
+                font-size: 1.35rem;
             }
 
             .scroll-note {
@@ -366,7 +399,6 @@
             }
 
             .option {
-                grid-template-columns: 1fr auto;
                 gap: 15px;
 
                 padding: 30px 0;
@@ -378,62 +410,85 @@
                 padding-right: 14px;
             }
 
+            .option-number {
+                margin-bottom: 14px;
+            }
+
             .option-title {
-                font-size: 48px;
+                font-size: 4rem;
             }
 
             .option-copy {
                 margin-top: 16px;
-                font-size: 19px;
+
+                font-size: 1.15rem;
             }
 
             .option-price {
-                font-size: 28px;
+                font-size: 1.5rem;
             }
 
             .email-section {
                 min-height: 90vh;
+
                 padding-top: 120px;
             }
 
             .email-label {
                 margin-bottom: 50px;
-                font-size: 54px;
+
+                font-size: 4rem;
             }
 
             .email-input {
-                font-size: 25px;
+                font-size: 1.35rem;
             }
 
             .continue {
                 margin-top: 45px;
-                font-size: 32px;
+
+                font-size: 1.35rem;
             }
 
             .pick-footer {
                 min-height: 35vh;
+
                 padding: 80px 20px 30px;
             }
 
             .footer-copy {
-                font-size: 38px;
+                font-size: 3rem;
             }
         }
+
     </style>
 </head>
+
 
 <body>
 
 <div class="pick-page">
 
     <!-- TOP -->
+
     <div class="pick-top">
-        <a href="index.html" class="back">← back</a>
-        <span class="tiny">tiny photo club</span>
+
+        <a
+            href="index.html"
+            class="back"
+        >
+            ← back
+        </a>
+
+        <span>
+            tiny photo club
+        </span>
+
     </div>
 
 
     <!-- INTRO -->
+
     <section class="pick-section intro">
 
         <h1>
@@ -455,15 +510,22 @@
 
 
     <!-- PACKAGES -->
+
     <section class="pick-section packages">
 
         <div class="packages-intro">
-            <p>one summer. your choice.</p>
+
+            <p>
+                one summer. your choice.
+            </p>
+
         </div>
+
 
         <div class="options">
 
-            <!-- 12 -->
+            <!-- 12 PHOTOS -->
+
             <button
                 class="option"
                 type="button"
@@ -494,7 +556,8 @@
             </button>
 
 
-            <!-- 36 -->
+            <!-- 36 PHOTOS -->
+
             <button
                 class="option"
                 type="button"
@@ -530,6 +593,7 @@
 
 
     <!-- EMAIL -->
+
     <section class="pick-section email-section">
 
         <h2 class="email-label">
@@ -563,6 +627,7 @@
 
 
     <!-- FOOTER -->
+
     <section class="pick-footer">
 
         <div class="footer-copy">
@@ -576,11 +641,18 @@
 
 
 <script>
-    const options = document.querySelectorAll(".option");
-    const emailInput = document.querySelector("#email");
-    const continueButton = document.querySelector("#continue-button");
+
+    const options =
+        document.querySelectorAll(".option");
+
+    const emailInput =
+        document.querySelector("#email");
+
+    const continueButton =
+        document.querySelector("#continue-button");
 
     let selectedPack = null;
+
 
     options.forEach(option => {
 
@@ -592,7 +664,8 @@
 
             option.classList.add("selected");
 
-            selectedPack = option.dataset.pack;
+            selectedPack =
+                option.dataset.pack;
 
         });
 
@@ -601,30 +674,42 @@
 
     continueButton.addEventListener("click", () => {
 
-        const email = emailInput.value.trim();
+        const email =
+            emailInput.value.trim();
+
 
         if (
             !selectedPack ||
             !email ||
             !emailInput.checkValidity()
         ) {
-            alert("choose a pack and enter your email ♡");
+
+            alert(
+                "choose a pack and enter your email ♡"
+            );
+
             return;
+
         }
+
 
         sessionStorage.setItem(
             "tpc_pack",
             selectedPack
         );
 
+
         sessionStorage.setItem(
             "tpc_email",
             email
         );
 
-        window.location.href = "upload.html";
+
+        window.location.href =
+            "upload.html";
 
     });
+
 </script>
 
 </body>
