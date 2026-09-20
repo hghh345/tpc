@@ -1,191 +1,74 @@
-const plans = document.querySelectorAll(".plan");
-const price = document.querySelector("#price");
-const emailInput = document.querySelector("#email");
-const checkoutButton = document.querySelector("#checkout-button");
+const pack =
+    parseInt(
+        sessionStorage.getItem("tpc_pack") || "12",
+        10
+    );
+
+const emailInput =
+    document.getElementById("email");
+
+const checkoutButton =
+    document.getElementById("checkout-button");
 
 
 /* -------------------------- */
-/* PHOTO SESSION */
+/* Stripe Prices */
 /* -------------------------- */
 
-async function preparePhotoSession() {
+const PRICE_12 =
+    "price_1UHqVsA5iFvf2pvFl4gaGU94";
 
-    const photoSessionId =
-        crypto.randomUUID();
-
-    return new Promise((resolve, reject) => {
-
-        const request =
-            indexedDB.open(
-                "tiny-photo-club",
-                3
-            );
+const PRICE_36 =
+    "price_1UHqWOA5iFvf2pvFnO3hENH8";
 
 
-        request.onerror = function () {
-
-            reject(request.error);
-
-        };
-
-
-        request.onsuccess = function () {
-
-            const db =
-                request.result;
+const priceId =
+    pack === 36
+        ? PRICE_36
+        : PRICE_12;
 
 
-            if (
-                !db.objectStoreNames.contains("selection")
-            ) {
+/* -------------------------- */
+/* Restore Email */
+/* -------------------------- */
 
-                reject(
-                    new Error(
-                        "Photo selection storage was not found."
-                    )
-                );
-
-                return;
-
-            }
+const savedEmail =
+    sessionStorage.getItem("tpc_email");
 
 
-            const transaction =
-                db.transaction(
-                    "selection",
-                    "readwrite"
-                );
+if (savedEmail) {
 
-
-            const store =
-                transaction.objectStore(
-                    "selection"
-                );
-
-
-            const getRequest =
-                store.get("current");
-
-
-            getRequest.onsuccess =
-                function () {
-
-                    const selection =
-                        getRequest.result;
-
-
-                    if (
-                        !selection ||
-                        !selection.photos ||
-                        selection.photos.length !== 12
-                    ) {
-
-                        reject(
-                            new Error(
-                                "Your dozen could not be found."
-                            )
-                        );
-
-                        return;
-
-                    }
-
-
-                    selection.status =
-                        "checkout";
-
-
-                    selection.photoSessionId =
-                        photoSessionId;
-
-
-                    store.put(selection);
-
-                };
-
-
-            getRequest.onerror =
-                function () {
-
-                    reject(
-                        getRequest.error
-                    );
-
-                };
-
-
-            transaction.oncomplete =
-                function () {
-
-                    resolve(
-                        photoSessionId
-                    );
-
-                };
-
-
-            transaction.onerror =
-                function () {
-
-                    reject(
-                        transaction.error
-                    );
-
-                };
-
-        };
-
-    });
+    emailInput.value =
+        savedEmail;
 
 }
 
 
 /* -------------------------- */
-/* PLAN SELECTION */
-/* -------------------------- */
-
-plans.forEach(plan => {
-
-    plan.addEventListener("click", () => {
-
-        plans.forEach(p => {
-
-            p.classList.remove("selected");
-
-        });
-
-
-        plan.classList.add("selected");
-
-
-        price.textContent =
-            "€" + plan.dataset.price;
-
-    });
-
-});
-
-
-/* -------------------------- */
-/* CHECKOUT */
+/* Checkout */
 /* -------------------------- */
 
 checkoutButton.addEventListener(
     "click",
-    async () => {
+    async function () {
 
         const email =
             emailInput.value.trim();
 
 
-        /*
-           Check email
-        */
-
         if (!email) {
 
             emailInput.focus();
 
+            return;
+
+        }
+
+
+        if (
+            !emailInput.checkValidity()
+        ) {
+
             emailInput.reportValidity();
 
             return;
@@ -193,31 +76,43 @@ checkoutButton.addEventListener(
         }
 
 
-        if (!emailInput.checkValidity()) {
-
-            emailInput.focus();
-
-            emailInput.reportValidity();
-
-            return;
-
-        }
-
-
-        /*
-           Find selected plan
-        */
-
-        const selectedPlan =
+        const delivery =
             document.querySelector(
-                ".plan.selected"
+                'input[name="delivery"]:checked'
+            ).value;
+
+
+        /*
+           Save the final email and
+           delivery choice.
+        */
+
+        sessionStorage.setItem(
+            "tpc_email",
+            email
+        );
+
+        sessionStorage.setItem(
+            "tpc_delivery",
+            delivery
+        );
+
+
+        /*
+           The existing upload flow creates
+           and stores the photo session ID.
+        */
+
+        const photoSessionId =
+            sessionStorage.getItem(
+                "photoSessionId"
             );
 
 
-        if (!selectedPlan) {
+        if (!photoSessionId) {
 
             alert(
-                "please choose a plan ♡"
+                "We couldn't find your photo session. Please go back and try again."
             );
 
             return;
@@ -225,85 +120,26 @@ checkoutButton.addEventListener(
         }
 
 
-        const selectedPrice =
-            selectedPlan.dataset.price;
-
-
         /*
-           Match selected plan to Stripe Price ID
-        */
-
-        let priceId;
-
-
-        if (selectedPrice === "18") {
-
-            priceId =
-                "price_1U82TOA5iFvf2pvF4uGCTXSS";
-
-        }
-
-
-        else if (selectedPrice === "45") {
-
-            priceId =
-                "price_1U82U6A5iFvf2pvFr1MFGx4U";
-
-        }
-
-
-        /*
-           Prepare photo session
-        */
-
-        let photoSessionId;
-
-
-        try {
-
-            photoSessionId =
-                await preparePhotoSession();
-
-        }
-
-        catch (error) {
-
-            console.error(
-                "Photo session error:",
-                error
-            );
-
-
-            alert(
-                "we couldn't find your dozen ♡ please go back and try again."
-            );
-
-
-            return;
-
-        }
-
-
-        /*
-           Disable button
+           Prevent double-clicks.
         */
 
         checkoutButton.disabled =
             true;
 
-
         checkoutButton.textContent =
-            "one moment ♡";
+            "one second...";
 
 
         try {
 
             const response =
                 await fetch(
-                    "/api/create-checkout-session",
+                    "/api/create-beta-checkout-session",
                     {
 
-                        method: "POST",
+                        method:
+                            "POST",
 
                         headers: {
 
@@ -322,7 +158,13 @@ checkoutButton.addEventListener(
                                     email,
 
                                 photoSessionId:
-                                    photoSessionId
+                                    photoSessionId,
+
+                                packSize:
+                                    pack,
+
+                                delivery:
+                                    delivery
 
                             })
 
@@ -338,14 +180,14 @@ checkoutButton.addEventListener(
 
                 throw new Error(
                     data.error ||
-                    "Something went wrong."
+                    "Unable to start checkout."
                 );
 
             }
 
 
             /*
-               Send customer to Stripe
+               Send customer to Stripe.
             */
 
             window.location.href =
@@ -356,20 +198,22 @@ checkoutButton.addEventListener(
 
         catch (error) {
 
-            console.error(error);
+            console.error(
+                "Checkout error:",
+                error
+            );
 
 
             alert(
-                "something went wrong ♡ please try again."
+                "Something went wrong starting checkout. Please try again."
             );
 
 
             checkoutButton.disabled =
                 false;
 
-
             checkoutButton.textContent =
-                "continue to checkout →";
+                "pay →";
 
         }
 
