@@ -1,4 +1,4 @@
-const pack =
+const selectedPack =
     parseInt(
         sessionStorage.getItem("tpc_pack") || "12",
         10
@@ -26,7 +26,7 @@ const PRICE_36 =
 
 
 const priceId =
-    pack === 36
+        selectedPack === 36
         ? PRICE_36
         : PRICE_12;
 
@@ -139,7 +139,7 @@ checkoutButton.addEventListener(
                                     email,
 
                                 packSize:
-                                    pack,
+                                        selectedPack,
 
                                 delivery:
                                     delivery
