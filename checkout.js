@@ -1,15 +1,15 @@
-const selectedPack =
+const betaPack =
     parseInt(
         sessionStorage.getItem("tpc_pack") || "12",
         10
     );
 
 
-const emailInput =
+const betaEmailInput =
     document.getElementById("email");
 
 
-const checkoutButton =
+const betaCheckoutButton =
     document.getElementById("checkout-button");
 
 
@@ -17,32 +17,32 @@ const checkoutButton =
 /* Stripe Prices */
 /* -------------------------- */
 
-const PRICE_12 =
+const BETA_PRICE_12 =
     "price_1UHqVsA5iFvf2pvFl4gaGU94";
 
 
-const PRICE_36 =
+const BETA_PRICE_36 =
     "price_1UHqWOA5iFvf2pvFnO3hENH8";
 
 
-const priceId =
-        selectedPack === 36
-        ? PRICE_36
-        : PRICE_12;
+const betaPriceId =
+    betaPack === 36
+        ? BETA_PRICE_36
+        : BETA_PRICE_12;
 
 
 /* -------------------------- */
 /* Restore Email */
 /* -------------------------- */
 
-const savedEmail =
+const betaSavedEmail =
     sessionStorage.getItem("tpc_email");
 
 
-if (savedEmail) {
+if (betaSavedEmail) {
 
-    emailInput.value =
-        savedEmail;
+    betaEmailInput.value =
+        betaSavedEmail;
 
 }
 
@@ -51,17 +51,17 @@ if (savedEmail) {
 /* Checkout */
 /* -------------------------- */
 
-checkoutButton.addEventListener(
+betaCheckoutButton.addEventListener(
     "click",
     async function () {
 
-        const email =
-            emailInput.value.trim();
+        const betaEmail =
+            betaEmailInput.value.trim();
 
 
-        if (!email) {
+        if (!betaEmail) {
 
-            emailInput.focus();
+            betaEmailInput.focus();
 
             return;
 
@@ -69,52 +69,48 @@ checkoutButton.addEventListener(
 
 
         if (
-            !emailInput.checkValidity()
+            !betaEmailInput.checkValidity()
         ) {
 
-            emailInput.reportValidity();
+            betaEmailInput.reportValidity();
 
             return;
 
         }
 
 
-        const delivery =
+        const betaDelivery =
             document.querySelector(
                 'input[name="delivery"]:checked'
             ).value;
 
 
-        /*
-           Save the final email and
-           delivery choice.
-        */
+        /* Save order details */
 
         sessionStorage.setItem(
             "tpc_email",
-            email
+            betaEmail
         );
+
 
         sessionStorage.setItem(
             "tpc_delivery",
-            delivery
+            betaDelivery
         );
 
 
-        /*
-           Prevent double-clicks.
-        */
+        /* Prevent double-clicks */
 
-        checkoutButton.disabled =
+        betaCheckoutButton.disabled =
             true;
 
-        checkoutButton.textContent =
+        betaCheckoutButton.textContent =
             "one second...";
 
 
         try {
 
-            const response =
+            const betaResponse =
                 await fetch(
                     "/api/create-beta-checkout-session",
                     {
@@ -133,16 +129,16 @@ checkoutButton.addEventListener(
                             JSON.stringify({
 
                                 priceId:
-                                    priceId,
+                                    betaPriceId,
 
                                 email:
-                                    email,
+                                    betaEmail,
 
                                 packSize:
-                                        selectedPack,
+                                    betaPack,
 
                                 delivery:
-                                    delivery
+                                    betaDelivery
 
                             })
 
@@ -150,26 +146,24 @@ checkoutButton.addEventListener(
                 );
 
 
-            const data =
-                await response.json();
+            const betaData =
+                await betaResponse.json();
 
 
-            if (!response.ok) {
+            if (!betaResponse.ok) {
 
                 throw new Error(
-                    data.error ||
+                    betaData.error ||
                     "Unable to start checkout."
                 );
 
             }
 
 
-            /*
-               Send customer to Stripe.
-            */
+            /* Send customer to Stripe */
 
             window.location.href =
-                data.url;
+                betaData.url;
 
         }
 
@@ -177,7 +171,7 @@ checkoutButton.addEventListener(
         catch (error) {
 
             console.error(
-                "Checkout error:",
+                "Beta checkout error:",
                 error
             );
 
@@ -187,10 +181,10 @@ checkoutButton.addEventListener(
             );
 
 
-            checkoutButton.disabled =
+            betaCheckoutButton.disabled =
                 false;
 
-            checkoutButton.textContent =
+            betaCheckoutButton.textContent =
                 "pay →";
 
         }
