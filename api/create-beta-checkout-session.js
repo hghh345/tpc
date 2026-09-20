@@ -1,7 +1,15 @@
 const Stripe = require("stripe");
+const { createClient } = require("@supabase/supabase-js");
+
 
 const stripe = new Stripe(
     process.env.STRIPE_SECRET_KEY
+);
+
+
+const supabase = createClient(
+    "https://cvuyybeihtvhygxukbuj.supabase.co/",
+    process.env.SUPABASE_SECRET_KEY
 );
 
 
@@ -21,20 +29,18 @@ module.exports = async (req, res) => {
         const {
             priceId,
             email,
-            photoSessionId,
             packSize,
             delivery
         } = req.body;
 
 
-        /*
-           Make sure we have everything we need.
-        */
+        /* -------------------------- */
+        /* Validate request */
+        /* -------------------------- */
 
         if (
             !priceId ||
             !email ||
-            !photoSessionId ||
             !packSize ||
             !delivery
         ) {
@@ -47,10 +53,9 @@ module.exports = async (req, res) => {
         }
 
 
-        /*
-           Only allow our two beta
-           one-time prices.
-        */
+        /* -------------------------- */
+        /* Validate pack */
+        /* -------------------------- */
 
         const allowedPrices = [
 
@@ -72,11 +77,6 @@ module.exports = async (req, res) => {
         }
 
 
-        /*
-           Make sure the pack size matches
-           the Stripe price.
-        */
-
         const expectedPrice =
             packSize === 36
                 ? "price_1UHqWOA5iFvf2pvFnO3hENH8"
@@ -88,16 +88,16 @@ module.exports = async (req, res) => {
         ) {
 
             return res.status(400).json({
-                error: "Price does not match pack size"
+                error:
+                    "Price does not match pack size"
             });
 
         }
 
 
-        /*
-           Only allow the three delivery
-           methods offered by the beta.
-        */
+        /* -------------------------- */
+        /* Validate delivery */
+        /* -------------------------- */
 
         const allowedDeliveries = [
 
@@ -115,18 +115,74 @@ module.exports = async (req, res) => {
         ) {
 
             return res.status(400).json({
-                error: "Invalid delivery method"
+                error:
+                    "Invalid delivery method"
             });
 
         }
 
 
-        /*
-           Create the line items.
-           
-           The print package is the main item.
-           Mail adds a €2 one-time fee.
-        */
+        /* -------------------------- */
+        /* Calculate amount */
+        /* -------------------------- */
+
+        let amount =
+            packSize === 36
+                ? 3600
+                : 1800;
+
+
+        if (
+            delivery === "mail"
+        ) {
+
+            amount += 200;
+
+        }
+
+
+        /* -------------------------- */
+        /* Create beta order */
+        /* -------------------------- */
+
+        const {
+            data: betaOrder,
+            error: betaOrderError
+        } =
+            await supabase
+                .from("beta_orders")
+                .insert({
+
+                    email:
+                        email,
+
+                    pack_size:
+                        packSize,
+
+                    delivery:
+                        delivery,
+
+                    amount:
+                        amount,
+
+                    status:
+                        "pending"
+
+                })
+                .select()
+                .single();
+
+
+        if (betaOrderError) {
+
+            throw betaOrderError;
+
+        }
+
+
+        /* -------------------------- */
+        /* Create Stripe line items */
+        /* -------------------------- */
 
         const lineItems = [
 
@@ -174,9 +230,9 @@ module.exports = async (req, res) => {
         }
 
 
-        /*
-           Create Stripe Checkout Session.
-        */
+        /* -------------------------- */
+        /* Create Stripe Checkout */
+        /* -------------------------- */
 
         const session =
             await stripe.checkout.sessions.create({
@@ -193,17 +249,14 @@ module.exports = async (req, res) => {
                     order_type:
                         "summer_experiment",
 
+                    beta_order_id:
+                        betaOrder.id,
+
                     pack_size:
                         String(packSize),
 
-                    price_id:
-                        priceId,
-
                     delivery:
-                        delivery,
-
-                    photoSessionId:
-                        photoSessionId
+                        delivery
 
                 },
 
@@ -211,11 +264,6 @@ module.exports = async (req, res) => {
                 line_items:
                     lineItems,
 
-
-                /*
-                   Only request a shipping address
-                   when the customer chooses mail.
-                */
 
                 ...(delivery === "mail"
                     ? {
@@ -235,11 +283,44 @@ module.exports = async (req, res) => {
                 success_url:
                     "https://tinyphoto.club/success.html?session_id={CHECKOUT_SESSION_ID}",
 
+
                 cancel_url:
                     "https://tinyphoto.club/checkout.html"
 
             });
 
+
+        /* -------------------------- */
+        /* Save Stripe session ID */
+        /* -------------------------- */
+
+        const {
+            error: updateError
+        } =
+            await supabase
+                .from("beta_orders")
+                .update({
+
+                    stripe_session_id:
+                        session.id
+
+                })
+                .eq(
+                    "id",
+                    betaOrder.id
+                );
+
+
+        if (updateError) {
+
+            throw updateError;
+
+        }
+
+
+        /* -------------------------- */
+        /* Return checkout URL */
+        /* -------------------------- */
 
         return res.status(200).json({
 
@@ -248,12 +329,15 @@ module.exports = async (req, res) => {
 
         });
 
-
     }
+
 
     catch (error) {
 
-        console.error(error);
+        console.error(
+            "Beta checkout error:",
+            error
+        );
 
 
         return res.status(500).json({
