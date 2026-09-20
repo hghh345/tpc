@@ -6,7 +6,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>pick your dozen • tiny photo club</title>
+<title>choose your photos • tiny photo club</title>
 
 <link rel="stylesheet" href="style.css">
 
@@ -16,7 +16,7 @@
 
 <main class="upload">
 
-<a href="index.html" class="back-button">
+<a href="pick.html" class="back-button">
     ← back
 </a>
 
@@ -26,7 +26,7 @@
 <header class="upload-header">
 
 <h1>
-    pick your dozen.
+    choose your photos.
 </h1>
 
 
@@ -51,7 +51,7 @@
             <br>
             no 47,000 photos rotting in your camera roll.
             <br>
-            12 little prints.
+            <span id="print-count-intro">12 little prints.</span>
         </p>
 
     </div>
@@ -70,7 +70,7 @@
 
 
 <p>
-    choose twelve photos
+    choose <span id="choose-count">twelve</span> photos
     <br>
     you'd be happy to find
     <br>
@@ -136,17 +136,17 @@
 
 
 
-<!-- YOUR DOZEN -->
+<!-- YOUR PRINTS -->
 
 <section class="progress-section">
 
     <div class="progress-title">
-        pick your twelve
+        pick your <span id="progress-count">twelve</span>
     </div>
 
 
     <p>
-        click a photo to add it to your dozen.
+        click a photo to add it to your prints.
         <br>
         click it again if you want two prints.
     </p>
@@ -173,11 +173,11 @@
 <section id="complete">
 
     <h2>
-        that's a good dozen.
+        that's a good pile.
     </h2>
 
     <p>
-        twelve tiny memories.
+        <span id="complete-count">twelve</span> tiny memories.
     </p>
 
 
@@ -199,6 +199,46 @@
 <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
 
 <script src="upload.js"></script>
+
+
+<script>
+
+/*
+    Get the package chosen on pick.html.
+    This only updates the copy for now.
+*/
+
+const pack =
+    sessionStorage.getItem("tpc_pack") || "12";
+
+const count =
+    parseInt(pack, 10);
+
+const word =
+    count === 36 ? "thirty-six" : "twelve";
+
+
+document.getElementById("print-count-intro").textContent =
+    count + " little prints.";
+
+
+document.getElementById("choose-count").textContent =
+    word;
+
+
+document.getElementById("progress-count").textContent =
+    word;
+
+
+document.getElementById("complete-count").textContent =
+    word;
+
+
+document.getElementById("counter").textContent =
+    "0 / " + count;
+
+</script>
+
 
 </body>
 
