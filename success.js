@@ -3,6 +3,7 @@ const params =
         window.location.search
     );
 
+
 const sessionId =
     params.get("session_id");
 
@@ -14,8 +15,10 @@ const sessionId =
 const DB_NAME =
     "tiny-photo-club";
 
+
 const DB_VERSION =
     3;
+
 
 const STORE_NAME =
     "photos";
@@ -202,41 +205,55 @@ function fileToDataURL(file) {
 
 
 /* -------------------------- */
-/* Complete Photo Order */
+/* Complete Beta Order */
 /* -------------------------- */
 
-async function completePhotoOrder(
-    photoSessionId
-) {
+async function completeBetaOrder() {
 
-   const selectedPack =
-    parseInt(
-        sessionStorage.getItem("tpc_pack") || "12",
-        10
-    );
+    if (!sessionId) {
 
-const TARGET_COUNT =
-    selectedPack === 36 ? 36 : 12;
+        throw new Error(
+            "No Stripe session ID found."
+        );
+
+    }
 
 
-if (
-    !selection ||
-    !selection.photos ||
-    selection.photos.length !== TARGET_COUNT
-) {
+    const selection =
+        await getSelection();
 
-    throw new Error(
-        "Your " +
-        TARGET_COUNT +
-        " selected photos could not be found."
-    );
 
-}
+    const selectedPack =
+        parseInt(
+            sessionStorage.getItem(
+                "tpc_pack"
+            ) || "12",
+            10
+        );
 
-    /*
-       Count how many physical prints
-       each photo represents.
-    */
+
+    const TARGET_COUNT =
+        selectedPack === 36
+            ? 36
+            : 12;
+
+
+    if (
+        !selection ||
+        !selection.photos ||
+        selection.photos.length !== TARGET_COUNT
+    ) {
+
+        throw new Error(
+            "Your selected photos could not be found."
+        );
+
+    }
+
+
+    /* -------------------------- */
+    /* Count physical prints */
+    /* -------------------------- */
 
     const quantities = {};
 
@@ -258,10 +275,9 @@ if (
     }
 
 
-    /*
-       Convert each UNIQUE photo into
-       base64 data.
-    */
+    /* -------------------------- */
+    /* Convert photos */
+    /* -------------------------- */
 
     const photos = [];
 
@@ -307,19 +323,18 @@ if (
 
 
     console.log(
-        "Sending photos:",
+        "Sending beta photos:",
         photos
     );
 
 
-    /*
-       Send the photos to our secure
-       server endpoint.
-    */
+    /* -------------------------- */
+    /* Send to beta API */
+    /* -------------------------- */
 
     const response =
         await fetch(
-            "/api/complete-photo-order",
+            "/api/complete-beta-photo-order",
             {
 
                 method:
@@ -337,9 +352,6 @@ if (
 
                         sessionId:
                             sessionId,
-
-                        photoSessionId:
-                            photoSessionId,
 
                         photos:
                             photos
@@ -365,7 +377,7 @@ if (
 
 
     console.log(
-        "Photo order complete:",
+        "Beta order complete:",
         data
     );
 
@@ -376,98 +388,18 @@ if (
 
 
 /* -------------------------- */
-/* Verify Payment */
+/* Run */
 /* -------------------------- */
 
 async function verifyPayment() {
 
-    if (!sessionId) {
-
-        console.error(
-            "No Stripe session ID found."
-        );
-
-        return;
-
-    }
-
-
     try {
 
-        /*
-           First ask Stripe whether payment
-           was actually completed.
-        */
-
-        const response =
-            await fetch(
-                "/api/get-checkout-session",
-                {
-
-                    method:
-                        "POST",
-
-                    headers: {
-
-                        "Content-Type":
-                            "application/json"
-
-                    },
-
-                    body:
-                        JSON.stringify({
-
-                            sessionId:
-                                sessionId
-
-                        })
-
-                }
-            );
-
-
-        const data =
-            await response.json();
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                data.error ||
-                "Unable to verify payment"
-            );
-
-        }
+        await completeBetaOrder();
 
 
         console.log(
-            "Payment verified:",
-            data
-        );
-
-
-        /*
-           Now transfer the photos.
-        */
-
-        const result =
-            await completePhotoOrder(
-                data.photoSessionId
-            );
-
-
-        console.log(
-            "Everything is complete:",
-            result
-        );
-
-
-        /*
-           Clean up temporary browser storage.
-        */
-
-        console.log(
-            "Photo order successfully saved."
+            "Tiny Photo Club beta order successfully saved."
         );
 
     }
@@ -476,7 +408,7 @@ async function verifyPayment() {
     catch (error) {
 
         console.error(
-            "Photo order failed:",
+            "Beta photo order failed:",
             error
         );
 
