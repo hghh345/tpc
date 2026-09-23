@@ -280,13 +280,8 @@ async function completeBetaOrder() {
     const photoIds =
         Object.keys(quantities);
 
-    for (
-        let i = 0;
-        i < photoIds.length;
-        i++
-    ) {
-        const photoId =
-            photoIds[i];
+   const uploadPhoto =
+    async function (photoId, index) {
 
         const storedPhoto =
             await getPhoto(photoId);
@@ -303,7 +298,7 @@ async function completeBetaOrder() {
             );
 
         console.log(
-            `Sending beta photo ${i + 1} of ${photoIds.length}:`,
+            `Sending beta photo ${index + 1} of ${photoIds.length}:`,
             photoId
         );
 
@@ -342,7 +337,44 @@ async function completeBetaOrder() {
                 "Unable to save photo."
             );
         }
-    }
+
+    };
+
+
+let nextIndex = 0;
+
+const workers =
+    Array.from(
+        {
+            length:
+                Math.min(
+                    4,
+                    photoIds.length
+                )
+        },
+        async function () {
+
+            while (
+                nextIndex <
+                photoIds.length
+            ) {
+
+                const index =
+                    nextIndex++;
+
+                await uploadPhoto(
+                    photoIds[index],
+                    index
+                );
+
+            }
+
+        }
+    );
+
+await Promise.all(
+    workers
+);
 
     return {
         success:
