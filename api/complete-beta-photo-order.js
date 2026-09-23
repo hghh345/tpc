@@ -183,22 +183,73 @@ module.exports = async (req, res) => {
                 newBetaPhoto;
         }
 
-      const {
-    error: selectedError
-} =
-    await supabase
-        .from("beta_selected_photos")
-        .insert({
-            beta_order_id:
-                betaOrder.id,
-            beta_photo_id:
-                betaPhoto.id,
-            quantity:
-                quantity
-        });
+        const {
+            error: selectedError
+        } =
+            await supabase
+                .from("beta_selected_photos")
+                .insert({
+                    beta_order_id:
+                        betaOrder.id,
+                    beta_photo_id:
+                        betaPhoto.id,
+                    quantity:
+                        quantity
+                });
 
         if (selectedError) {
             throw selectedError;
+        }
+
+        // Check how many physical prints
+        // have been selected so far.
+        const {
+            data: selectedPhotos,
+            error: selectedPhotosError
+        } =
+            await supabase
+                .from("beta_selected_photos")
+                .select("quantity")
+                .eq(
+                    "beta_order_id",
+                    betaOrder.id
+                );
+
+        if (selectedPhotosError) {
+            throw selectedPhotosError;
+        }
+
+        const totalPrints =
+            selectedPhotos.reduce(
+                (total, item) =>
+                    total +
+                    Number(item.quantity || 0),
+                0
+            );
+
+        // Mark the order ready only when
+        // the complete pack has been uploaded.
+        if (
+            totalPrints ===
+            Number(betaOrder.pack_size)
+        ) {
+            const {
+                error: updateError
+            } =
+                await supabase
+                    .from("beta_orders")
+                    .update({
+                        status:
+                            "ready"
+                    })
+                    .eq(
+                        "id",
+                        betaOrder.id
+                    );
+
+            if (updateError) {
+                throw updateError;
+            }
         }
 
         return res.status(200).json({
