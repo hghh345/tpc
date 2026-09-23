@@ -743,11 +743,32 @@ async function addUploadedFile(file) {
 
     }
 
-    const id =
+  let id;
+
+try {
+
+    id =
         await savePhoto(
             photoBlob
         );
 
+}
+
+catch (error) {
+
+    console.error(
+        "Photo save failed:",
+        error
+    );
+
+    alert(
+        "this photo couldn't be added: " +
+        error.message
+    );
+
+    return;
+
+}
     const photo =
         document.createElement(
             "div"
