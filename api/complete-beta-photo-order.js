@@ -183,25 +183,19 @@ module.exports = async (req, res) => {
                 newBetaPhoto;
         }
 
-        const {
-            error: selectedError
-        } =
-            await supabase
-                .from("beta_selected_photos")
-                .upsert(
-                    {
-                        beta_order_id:
-                            betaOrder.id,
-                        beta_photo_id:
-                            betaPhoto.id,
-                        quantity:
-                            quantity
-                    },
-                    {
-                        onConflict:
-                            "beta_order_id,beta_photo_id"
-                    }
-                );
+      const {
+    error: selectedError
+} =
+    await supabase
+        .from("beta_selected_photos")
+        .insert({
+            beta_order_id:
+                betaOrder.id,
+            beta_photo_id:
+                betaPhoto.id,
+            quantity:
+                quantity
+        });
 
         if (selectedError) {
             throw selectedError;
