@@ -214,7 +214,6 @@ async function getPhoto(id) {
     const db =
         await openDatabase();
 
-
     return new Promise(
         (resolve, reject) => {
 
@@ -224,26 +223,49 @@ async function getPhoto(id) {
                     "readonly"
                 );
 
-
             const store =
                 transaction.objectStore(
                     STORE_NAME
                 );
 
-
             const request =
                 store.get(id);
-
 
             request.onsuccess =
                 function () {
 
-                    resolve(
-                        request.result
-                    );
+                    const record =
+                        request.result;
+
+                    if (!record) {
+
+                        resolve(
+                            undefined
+                        );
+
+                        return;
+
+                    }
+
+                    const blob =
+                        new Blob(
+                            [
+                                record.blob
+                            ],
+                            {
+                                type:
+                                    record.type ||
+                                    "image/jpeg"
+                            }
+                        );
+
+                    resolve({
+                        ...record,
+                        blob:
+                            blob
+                    });
 
                 };
-
 
             request.onerror =
                 function () {
@@ -258,7 +280,6 @@ async function getPhoto(id) {
     );
 
 }
-
 
 /* ------------------------------ */
 /* Get All Photos */
