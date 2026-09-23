@@ -145,10 +145,11 @@ async function savePhoto(file) {
     const db =
         await openDatabase();
 
-
-    const id =
-        crypto.randomUUID();
-
+const id =
+    crypto.randomUUID
+        ? crypto.randomUUID()
+        : Date.now().toString(36) +
+          Math.random().toString(36).slice(2);
 
     return new Promise(
         (resolve, reject) => {
