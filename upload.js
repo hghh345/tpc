@@ -139,17 +139,19 @@ function openDatabase() {
 /* ------------------------------ */
 /* Save Photo */
 /* ------------------------------ */
-
 async function savePhoto(file) {
 
     const db =
         await openDatabase();
 
-const id =
-    crypto.randomUUID
-        ? crypto.randomUUID()
-        : Date.now().toString(36) +
-          Math.random().toString(36).slice(2);
+    const id =
+        crypto.randomUUID
+            ? crypto.randomUUID()
+            : Date.now().toString(36) +
+              Math.random().toString(36).slice(2);
+
+    const arrayBuffer =
+        await file.arrayBuffer();
 
     return new Promise(
         (resolve, reject) => {
@@ -160,12 +162,10 @@ const id =
                     "readwrite"
                 );
 
-
             const store =
                 transaction.objectStore(
                     STORE_NAME
                 );
-
 
             store.put({
 
@@ -173,26 +173,22 @@ const id =
                     id,
 
                 blob:
-                    file,
+                    arrayBuffer,
 
                 name:
-                    file.name,
+                    file.name || "photo.jpg",
 
                 type:
-                    file.type
+                    file.type || "image/jpeg"
 
             });
-
 
             transaction.oncomplete =
                 function () {
 
-                    resolve(
-                        id
-                    );
+                    resolve(id);
 
                 };
-
 
             transaction.onerror =
                 function () {
