@@ -20,16 +20,17 @@ module.exports = async (req, res) => {
     try {
         const {
             sessionId,
-            photos
+            photo
         } = req.body;
 
         if (
             !sessionId ||
-            !photos ||
-            !Array.isArray(photos)
+            !photo ||
+            !photo.id ||
+            !photo.data
         ) {
             return res.status(400).json({
-                error: "Missing order information"
+                error: "Missing photo information"
             });
         }
 
@@ -72,118 +73,93 @@ module.exports = async (req, res) => {
             throw betaOrderError;
         }
 
-        if (
-            betaOrder.status === "paid" ||
-            betaOrder.status === "ready"
-        ) {
-            return res.status(200).json({
-                success: true,
-                message:
-                    "Order already completed."
+        const quantity =
+            Number(photo.quantity || 0);
+
+        if (quantity < 1) {
+            return res.status(400).json({
+                error: "Invalid photo quantity"
             });
         }
 
-        const targetCount =
-            Number(betaOrder.pack_size);
-
-        const totalPrints =
-            photos.reduce(
-                (total, photo) =>
-                    total +
-                    Number(
-                        photo.quantity || 0
-                    ),
-                0
+        const matches =
+            photo.data.match(
+                /^data:(.+);base64,(.+)$/
             );
 
-        if (
-            totalPrints !== targetCount
-        ) {
+        if (!matches) {
             return res.status(400).json({
-                error:
-                    `Exactly ${targetCount} prints are required.`
+                error: "Invalid photo data"
             });
         }
 
-        const uploadedPhotos = [];
+        const contentType =
+            matches[1];
 
-        for (const photo of photos) {
+        const base64Data =
+            matches[2];
 
-            if (
-                !photo.id ||
-                !photo.data
-            ) {
-                throw new Error(
-                    "Invalid photo information"
-                );
-            }
+        const buffer =
+            Buffer.from(
+                base64Data,
+                "base64"
+            );
 
-            const quantity =
-                Number(
-                    photo.quantity || 0
-                );
+        const extension =
+            contentType.split("/")[1] ||
+            "jpg";
 
-            if (
-                quantity < 1
-            ) {
-                throw new Error(
-                    "Invalid photo quantity"
-                );
-            }
+        const storagePath =
+            `beta/${betaOrder.id}/${photo.id}.${extension}`;
 
-            const matches =
-                photo.data.match(
-                    /^data:(.+);base64,(.+)$/
-                );
-
-            if (!matches) {
-                throw new Error(
-                    "Invalid photo data"
-                );
-            }
-
-            const contentType =
-                matches[1];
-
-            const base64Data =
-                matches[2];
-
-            const buffer =
-                Buffer.from(
-                    base64Data,
-                    "base64"
+        const {
+            error: uploadError
+        } =
+            await supabase
+                .storage
+                .from("customer-photos")
+                .upload(
+                    storagePath,
+                    buffer,
+                    {
+                        contentType:
+                            contentType,
+                        upsert:
+                            true
+                    }
                 );
 
-            const extension =
-                contentType.split("/")[1] ||
-                "jpg";
+        if (uploadError) {
+            throw uploadError;
+        }
 
-            const storagePath =
-                `beta/${betaOrder.id}/${photo.id}.${extension}`;
+        const {
+            data: existingPhoto,
+            error: existingPhotoError
+        } =
+            await supabase
+                .from("beta_photos")
+                .select("*")
+                .eq(
+                    "beta_order_id",
+                    betaOrder.id
+                )
+                .eq(
+                    "photo_id",
+                    photo.id
+                )
+                .maybeSingle();
 
+        if (existingPhotoError) {
+            throw existingPhotoError;
+        }
+
+        let betaPhoto =
+            existingPhoto;
+
+        if (!betaPhoto) {
             const {
-                error: uploadError
-            } =
-                await supabase
-                    .storage
-                    .from("customer-photos")
-                    .upload(
-                        storagePath,
-                        buffer,
-                        {
-                            contentType:
-                                contentType,
-                            upsert:
-                                true
-                        }
-                    );
-
-            if (uploadError) {
-                throw uploadError;
-            }
-
-            const {
-                data: betaPhoto,
+                data: newBetaPhoto,
                 error: betaPhotoError
             } =
                 await supabase
@@ -203,51 +179,32 @@ module.exports = async (req, res) => {
                 throw betaPhotoError;
             }
 
-            uploadedPhotos.push({
-                betaPhoto:
-                    betaPhoto,
-                quantity:
-                    quantity
-            });
-        }
-
-        for (const uploadedPhoto of uploadedPhotos) {
-
-            const {
-                error: selectedError
-            } =
-                await supabase
-                    .from("beta_selected_photos")
-                    .insert({
-                        beta_order_id:
-                            betaOrder.id,
-                        beta_photo_id:
-                            uploadedPhoto.betaPhoto.id,
-                        quantity:
-                            uploadedPhoto.quantity
-                    });
-
-            if (selectedError) {
-                throw selectedError;
-            }
+            betaPhoto =
+                newBetaPhoto;
         }
 
         const {
-            error: updateError
+            error: selectedError
         } =
             await supabase
-                .from("beta_orders")
-                .update({
-                    status:
-                        "ready"
-                })
-                .eq(
-                    "id",
-                    betaOrder.id
+                .from("beta_selected_photos")
+                .upsert(
+                    {
+                        beta_order_id:
+                            betaOrder.id,
+                        beta_photo_id:
+                            betaPhoto.id,
+                        quantity:
+                            quantity
+                    },
+                    {
+                        onConflict:
+                            "beta_order_id,beta_photo_id"
+                    }
                 );
 
-        if (updateError) {
-            throw updateError;
+        if (selectedError) {
+            throw selectedError;
         }
 
         return res.status(200).json({
@@ -255,10 +212,8 @@ module.exports = async (req, res) => {
                 true,
             betaOrderId:
                 betaOrder.id,
-            photosUploaded:
-                uploadedPhotos.length,
-            totalPrints:
-                totalPrints
+            photoId:
+                photo.id
         });
 
     } catch (error) {
@@ -268,10 +223,10 @@ module.exports = async (req, res) => {
             error
         );
 
-       return res.status(500).json({
-    error:
-        error.message ||
-        "Unable to complete beta photo order"
-});
+        return res.status(500).json({
+            error:
+                error.message ||
+                "Unable to complete beta photo order"
+        });
     }
 };
