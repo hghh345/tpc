@@ -788,7 +788,7 @@ upload.addEventListener(
             [
                 ...event.target.files
             ];
-
+alert("files: " + files.length);
 
         for (
             const file
