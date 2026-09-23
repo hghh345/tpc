@@ -808,13 +808,13 @@ async function addUploadedFile(file) {
 upload.addEventListener(
     "change",
     async function (event) {
-        alert("file selected");
+        
 
         const files =
             [
                 ...event.target.files
             ];
-alert("files: " + files.length);
+
 
         for (
             const file
