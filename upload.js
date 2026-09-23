@@ -1197,7 +1197,6 @@ async function restorePhotoBank() {
     const photos =
         await getAllPhotos();
 
-
     for (
         const storedPhoto
         of photos
@@ -1208,39 +1207,45 @@ async function restorePhotoBank() {
                 "div"
             );
 
-
         photo.className =
             "photo";
-
 
         const image =
             document.createElement(
                 "img"
             );
 
+        const blob =
+            storedPhoto.blob instanceof Blob
+                ? storedPhoto.blob
+                : new Blob(
+                    [
+                        storedPhoto.blob
+                    ],
+                    {
+                        type:
+                            storedPhoto.type ||
+                            "image/jpeg"
+                    }
+                );
 
         const previewUrl =
             URL.createObjectURL(
-                storedPhoto.blob
+                blob
             );
-
 
         image.src =
             previewUrl;
 
-
         image.alt =
             "uploaded photo";
-
 
         photo.appendChild(
             image
         );
 
-
         photo.dataset.id =
             storedPhoto.id;
-
 
         photo.addEventListener(
             "click",
@@ -1257,17 +1262,14 @@ async function restorePhotoBank() {
             }
         );
 
-
         gallery.appendChild(
             photo
         );
 
     }
 
-
     const savedSelection =
         await getSelection();
-
 
     if (
         savedSelection &&
@@ -1276,13 +1278,6 @@ async function restorePhotoBank() {
 
         selectedPhotos =
             savedSelection.photos;
-
-
-        /*
-           If the user changed packages,
-           don't allow an old selection to
-           exceed the new package size.
-        */
 
         if (
             selectedPhotos.length >
@@ -1296,7 +1291,6 @@ async function restorePhotoBank() {
                 );
 
         }
-
 
         await updateUI();
 
