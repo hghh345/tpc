@@ -677,17 +677,18 @@ async function addUploadedFile(file) {
     }
 
 
-    let photoBlob;
+   let photoBlob;
 
+alert("starting photo preparation");
 
-    try {
+try {
 
-        photoBlob =
-            await preparePhoto(
-                file
-            );
+    photoBlob =
+        await preparePhoto(
+            file
+        );
 
-    }
+    alert("photo prepared");
 
     catch (error) {
 
