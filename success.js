@@ -236,6 +236,18 @@ function fileToDataURL(file) {
 /* -------------------------- */
 
 async function completeBetaOrder() {
+    const successTitle =
+    document.getElementById("success-title");
+
+const successMessage =
+    document.getElementById("success-message");
+
+const successProgress =
+    document.getElementById("success-progress");
+
+const successNote =
+    document.getElementById("success-note");
+
     if (!sessionId) {
         throw new Error(
             "No Stripe session ID found."
@@ -301,6 +313,8 @@ async function completeBetaOrder() {
             `Sending beta photo ${index + 1} of ${photoIds.length}:`,
             photoId
         );
+        successProgress.textContent =
+    `saving photo ${index + 1} of ${photoIds.length}…`;
 
         const response =
             await fetch(
@@ -376,10 +390,22 @@ await Promise.all(
     workers
 );
 
-    return {
-        success:
-            true
-    };
+  successTitle.textContent =
+    "you're in ♡";
+
+successMessage.textContent =
+    "your summer is about to become physical.";
+
+successProgress.textContent =
+    "we've got your photos. now we'll turn them into tiny prints.";
+
+successNote.innerHTML =
+    "<p>keep an eye on your inbox.<br>we'll send you the details for getting your prints.</p>";
+
+return {
+    success:
+        true
+};
 }
 
 
