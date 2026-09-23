@@ -290,7 +290,6 @@ async function getAllPhotos() {
     const db =
         await openDatabase();
 
-
     return new Promise(
         (resolve, reject) => {
 
@@ -300,26 +299,52 @@ async function getAllPhotos() {
                     "readonly"
                 );
 
-
             const store =
                 transaction.objectStore(
                     STORE_NAME
                 );
 
-
             const request =
                 store.getAll();
-
 
             request.onsuccess =
                 function () {
 
+                    const records =
+                        request.result || [];
+
+                    const photos =
+                        records.map(
+                            function (record) {
+
+                                const blob =
+                                    record.blob instanceof Blob
+                                        ? record.blob
+                                        : new Blob(
+                                            [
+                                                record.blob
+                                            ],
+                                            {
+                                                type:
+                                                    record.type ||
+                                                    "image/jpeg"
+                                            }
+                                        );
+
+                                return {
+                                    ...record,
+                                    blob:
+                                        blob
+                                };
+
+                            }
+                        );
+
                     resolve(
-                        request.result
+                        photos
                     );
 
                 };
-
 
             request.onerror =
                 function () {
@@ -334,7 +359,6 @@ async function getAllPhotos() {
     );
 
 }
-
 
 /* ------------------------------ */
 /* Get Selection */
