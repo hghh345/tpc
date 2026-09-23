@@ -121,7 +121,6 @@ async function getPhoto(id) {
     const db =
         await openDatabase();
 
-
     return new Promise((resolve, reject) => {
 
         const transaction =
@@ -130,26 +129,54 @@ async function getPhoto(id) {
                 "readonly"
             );
 
-
         const store =
             transaction.objectStore(
                 STORE_NAME
             );
 
-
         const request =
             store.get(id);
-
 
         request.onsuccess =
             function () {
 
-                resolve(
-                    request.result
-                );
+                const record =
+                    request.result;
+
+                if (!record) {
+
+                    resolve(
+                        undefined
+                    );
+
+                    return;
+
+                }
+
+                const blob =
+                    record.blob instanceof Blob
+                        ? record.blob
+                        : new Blob(
+                            [
+                                record.blob
+                            ],
+                            {
+                                type:
+                                    record.type ||
+                                    "image/jpeg"
+                            }
+                        );
+
+                resolve({
+
+                    ...record,
+
+                    blob:
+                        blob
+
+                });
 
             };
-
 
         request.onerror =
             function () {
@@ -334,19 +361,22 @@ async function verifyPayment() {
 
         await completeBetaOrder();
 
-
         console.log(
             "Tiny Photo Club beta order successfully saved."
         );
 
     }
 
-
     catch (error) {
 
         console.error(
             "Beta photo order failed:",
             error
+        );
+
+        alert(
+            "There was a problem saving your photos: " +
+            error.message
         );
 
     }
