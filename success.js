@@ -209,181 +209,118 @@ function fileToDataURL(file) {
 /* -------------------------- */
 
 async function completeBetaOrder() {
-
     if (!sessionId) {
-
         throw new Error(
             "No Stripe session ID found."
         );
-
     }
-
 
     const selection =
         await getSelection();
 
-
     const selectedPack =
         parseInt(
-            sessionStorage.getItem(
-                "tpc_pack"
-            ) || "12",
+            sessionStorage.getItem("tpc_pack") || "12",
             10
         );
 
-
     const TARGET_COUNT =
-        selectedPack === 36
-            ? 36
-            : 12;
-
+        selectedPack === 36 ? 36 : 12;
 
     if (
         !selection ||
         !selection.photos ||
         selection.photos.length !== TARGET_COUNT
     ) {
-
         throw new Error(
             "Your selected photos could not be found."
         );
-
     }
 
-
-    /* -------------------------- */
-    /* Count physical prints */
-    /* -------------------------- */
-
     const quantities = {};
-
 
     for (
         const photoId
         of selection.photos
     ) {
-
         if (!quantities[photoId]) {
-
             quantities[photoId] = 0;
-
         }
 
-
         quantities[photoId]++;
-
     }
 
-
-    /* -------------------------- */
-    /* Convert photos */
-    /* -------------------------- */
-
-    const photos = [];
-
+    const photoIds =
+        Object.keys(quantities);
 
     for (
-        const photoId
-        of Object.keys(quantities)
+        let i = 0;
+        i < photoIds.length;
+        i++
     ) {
+        const photoId =
+            photoIds[i];
 
         const storedPhoto =
             await getPhoto(photoId);
 
-
         if (!storedPhoto) {
-
             throw new Error(
                 "A selected photo could not be found."
             );
-
         }
-
 
         const data =
             await fileToDataURL(
                 storedPhoto.blob
             );
 
-
-        photos.push({
-
-            id:
-                photoId,
-
-            data:
-                data,
-
-            quantity:
-                quantities[photoId]
-
-        });
-
-    }
-
-
-    console.log(
-        "Sending beta photos:",
-        photos
-    );
-
-
-    /* -------------------------- */
-    /* Send to beta API */
-    /* -------------------------- */
-
-    const response =
-        await fetch(
-            "/api/complete-beta-photo-order",
-            {
-
-                method:
-                    "POST",
-
-                headers: {
-
-                    "Content-Type":
-                        "application/json"
-
-                },
-
-                body:
-                    JSON.stringify({
-
-                        sessionId:
-                            sessionId,
-
-                        photos:
-                            photos
-
-                    })
-
-            }
+        console.log(
+            `Sending beta photo ${i + 1} of ${photoIds.length}:`,
+            photoId
         );
 
+        const response =
+            await fetch(
+                "/api/complete-beta-photo-order",
+                {
+                    method:
+                        "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+                    body:
+                        JSON.stringify({
+                            sessionId:
+                                sessionId,
+                            photo: {
+                                id:
+                                    photoId,
+                                data:
+                                    data,
+                                quantity:
+                                    quantities[photoId]
+                            }
+                        })
+                }
+            );
 
-    const data =
-        await response.json();
+        const dataResponse =
+            await response.json();
 
-
-    if (!response.ok) {
-
-        throw new Error(
-            data.error ||
-            "Unable to save your photos."
-        );
-
+        if (!response.ok) {
+            throw new Error(
+                dataResponse.error ||
+                "Unable to save photo."
+            );
+        }
     }
 
-
-    console.log(
-        "Beta order complete:",
-        data
-    );
-
-
-    return data;
-
+    return {
+        success:
+            true
+    };
 }
 
 
