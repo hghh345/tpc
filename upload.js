@@ -707,31 +707,24 @@ async function preparePhoto(file) {
 
 async function addUploadedFile(file) {
 
-    alert("1: file received");
-
     if (
         !file.type.startsWith("image/") &&
         !file.name.toLowerCase().endsWith(".heic") &&
         !file.name.toLowerCase().endsWith(".heif")
     ) {
 
-        alert("2: file rejected");
         return;
 
     }
-
-    alert("2: file accepted");
 
     let photoBlob;
 
     try {
 
-        alert("3: preparing photo");
-
         photoBlob =
-            await preparePhoto(file);
-
-        alert("4: photo prepared");
+            await preparePhoto(
+                file
+            );
 
     }
 
@@ -743,78 +736,67 @@ async function addUploadedFile(file) {
         );
 
         alert(
-            "ERROR preparing photo: " +
-            error.message
+            "this photo couldn't be processed ♡ please try another photo."
         );
 
         return;
 
     }
 
-    try {
-
-        alert("5: saving photo");
-
-        const id =
-            await savePhoto(photoBlob);
-
-        alert("6: photo saved");
-
-        const photo =
-            document.createElement("div");
-
-        photo.className =
-            "photo";
-
-        const image =
-            document.createElement("img");
-
-        const previewUrl =
-            URL.createObjectURL(photoBlob);
-
-        image.src =
-            previewUrl;
-
-        image.alt =
-            "uploaded photo";
-
-        photo.appendChild(image);
-
-        photo.dataset.id =
-            id;
-
-        photo.addEventListener(
-            "click",
-            function (event) {
-
-                event.preventDefault();
-
-                event.stopPropagation();
-
-                addPrint(photo);
-
-            }
+    const id =
+        await savePhoto(
+            photoBlob
         );
 
-        gallery.appendChild(photo);
-
-        alert("7: photo added");
-
-    }
-
-    catch (error) {
-
-        console.error(
-            "Photo save failed:",
-            error
+    const photo =
+        document.createElement(
+            "div"
         );
 
-        alert(
-            "ERROR saving photo: " +
-            error.message
+    photo.className =
+        "photo";
+
+    const image =
+        document.createElement(
+            "img"
         );
 
-    }
+    const previewUrl =
+        URL.createObjectURL(
+            photoBlob
+        );
+
+    image.src =
+        previewUrl;
+
+    image.alt =
+        "uploaded photo";
+
+    photo.appendChild(
+        image
+    );
+
+    photo.dataset.id =
+        id;
+
+    photo.addEventListener(
+        "click",
+        function (event) {
+
+            event.preventDefault();
+
+            event.stopPropagation();
+
+            addPrint(
+                photo
+            );
+
+        }
+    );
+
+    gallery.appendChild(
+        photo
+    );
 
 }
 
