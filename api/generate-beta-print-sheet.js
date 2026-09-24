@@ -414,7 +414,7 @@ module.exports =
         try {
 
             const {
-                password
+                password,
                 betaOrderId
             } =
                 req.body;
