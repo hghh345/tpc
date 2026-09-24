@@ -17,7 +17,7 @@ const DB_NAME =
 
 
 const DB_VERSION =
-    4;
+    5;
 
 
 const STORE_NAME =
