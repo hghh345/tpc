@@ -431,6 +431,10 @@ h2{
     .upload-copy {
         font-size: 1.1rem;
     }
+    .upload-copy small {
+    font-size: 0.7em;
+    opacity: 0.7;
+}
 
     /* PHOTO BANK GRID */
     #gallery {
