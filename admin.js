@@ -183,7 +183,7 @@ async function loadBetaOrders() {
 
                 }
             );
-
+console.log("BETA API STATUS:", response.status);
 
         const data =
             await response.json();
