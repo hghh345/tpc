@@ -901,17 +901,17 @@ if (
 
         catch (error) {
 
-            console.error(
-                "Beta print sheet error:",
-                error
-            );
+    console.error(
+        "Generate beta print sheet error:",
+        error
+    );
 
+    return res.status(500).json({
+        error:
+            error.message ||
+            "Unable to generate print sheet"
+    });
 
-            return res.status(500).json({
-                error:
-                    "Unable to generate beta print sheet"
-            });
-
-        }
+}
 
     };
