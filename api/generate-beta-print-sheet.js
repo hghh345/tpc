@@ -415,6 +415,7 @@ module.exports =
 
             const {
                 password
+                betaOrderId
             } =
                 req.body;
 
@@ -437,64 +438,89 @@ module.exports =
             }
 
 
-            /* -------------------------- */
-            /* FIND LATEST READY BETA ORDER */
-            /* -------------------------- */
+         /* -------------------------- */
+/* FIND SPECIFIC BETA ORDER */
+/* -------------------------- */
 
-            const {
-                data: betaOrder,
-                error: betaOrderError
-            } =
-                await supabase
-                    .from("beta_orders")
-                    .select("*")
-                    .in(
-                        "status",
-                        [
-                            "ready"
-                        ]
-                    )
-                    .order(
-                        "created_at",
-                        {
-                            ascending:
-                                false
-                        }
-                    )
-                    .limit(1)
-                    .single();
+if (!betaOrderId) {
+
+    return res.status(400).json({
+        error:
+            "Missing beta order ID"
+    });
+
+}
 
 
-            if (
-                betaOrderError
-            ) {
+const {
+    data: betaOrder,
+    error: betaOrderError
+} =
+    await supabase
+        .from("beta_orders")
+        .select("*")
+        .eq(
+            "id",
+            betaOrderId
+        )
+        .single();
 
-                throw betaOrderError;
 
-            }
+if (
+    betaOrderError
+) {
+
+    throw betaOrderError;
+
+}
 
 
-            const packSize =
-                Number(
-                    betaOrder.pack_size
-                );
+/*
+   Only generate sheets for
+   orders that are ready or
+   already printed.
+*/
+
+if (
+    ![
+        "ready",
+        "printed"
+    ].includes(
+        betaOrder.status
+    )
+) {
+
+    return res.status(400).json({
+
+        error:
+            "This order is not ready for printing"
+
+    });
+
+}
 
 
-            if (
-                ![
-                    12,
-                    36
-                ].includes(
-                    packSize
-                )
-            ) {
+const packSize =
+    Number(
+        betaOrder.pack_size
+    );
 
-                return res.status(400).json({
-                    error:
-                        "Invalid beta pack size"
-                });
 
-            }
+if (
+    ![
+        12,
+        36
+    ].includes(
+        packSize
+    )
+) {
+
+    return res.status(400).json({
+        error:
+            "Invalid beta pack size"
+    });
+
+}
 
 
             /* -------------------------- */
@@ -845,32 +871,7 @@ module.exports =
                 await pdfDoc.save();
 
 
-            /* -------------------------- */
-            /* MARK AS PRINTED */
-            /* -------------------------- */
-
-            const {
-                error: updateError
-            } =
-                await supabase
-                    .from("beta_orders")
-                    .update({
-                        status:
-                            "printed"
-                    })
-                    .eq(
-                        "id",
-                        betaOrder.id
-                    );
-
-
-            if (
-                updateError
-            ) {
-
-                throw updateError;
-
-            }
+           
 
 
             /* -------------------------- */
