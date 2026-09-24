@@ -12,7 +12,8 @@ const ordersSection =
 
 const orderList =
     document.querySelector("#order-list");
-
+const betaOrderList =
+    document.querySelector("#beta-order-list");
 const loginError =
     document.querySelector("#login-error");
 
