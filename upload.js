@@ -52,7 +52,7 @@ const DB_NAME =
     "tiny-photo-club";
 
 const DB_VERSION =
-    4;
+    5;
 
 const STORE_NAME =
     "photos";
