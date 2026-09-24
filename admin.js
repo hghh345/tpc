@@ -965,31 +965,22 @@ async function generateBetaPrintSheet(
             );
 
 
-        if (!response.ok) {
+      if (!response.ok) {
 
-            let message =
-                "Unable to generate print sheet";
+    const raw =
+        await response.text();
 
+    console.log(
+        "BETA PRINT ERROR RESPONSE:",
+        raw
+    );
 
-            try {
+    throw new Error(
+        raw ||
+        "Unable to generate print sheet"
+    );
 
-                const data =
-                    await response.json();
-
-                message =
-                    data.error ||
-                    message;
-
-            }
-
-            catch (error) {}
-
-
-            throw new Error(
-                message
-            );
-
-        }
+}
 
 
         const blob =
