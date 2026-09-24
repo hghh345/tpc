@@ -12,8 +12,10 @@ const ordersSection =
 
 const orderList =
     document.querySelector("#order-list");
+
 const betaOrderList =
     document.querySelector("#beta-order-list");
+
 const loginError =
     document.querySelector("#login-error");
 
@@ -129,6 +131,9 @@ async function loadOrders() {
             data.orders
         );
 
+
+        await loadBetaOrders();
+
     }
 
 
@@ -144,6 +149,72 @@ async function loadOrders() {
 
         loginButton.textContent =
             "enter →";
+
+    }
+
+}
+
+
+/* -------------------------- */
+/* LOAD BETA ORDERS */
+/* -------------------------- */
+
+async function loadBetaOrders() {
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/admin-beta-orders",
+                {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+                            password:
+                                adminPassword
+                        })
+
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.error ||
+                "Unable to load beta orders"
+            );
+
+        }
+
+
+        renderBetaOrders(
+            data.orders
+        );
+
+    }
+
+
+    catch (error) {
+
+        console.error(
+            "Beta orders error:",
+            error
+        );
+
+        betaOrderList.innerHTML =
+            "<p>unable to load summer experiment orders ♡</p>";
 
     }
 
@@ -174,6 +245,35 @@ function renderOrders(
 
     orders.forEach(
         renderOrder
+    );
+
+}
+
+
+/* -------------------------- */
+/* RENDER BETA ORDERS */
+/* -------------------------- */
+
+function renderBetaOrders(
+    orders
+) {
+
+    betaOrderList.innerHTML =
+        "";
+
+
+    if (!orders.length) {
+
+        betaOrderList.innerHTML =
+            "<p>no summer experiment orders yet ♡</p>";
+
+        return;
+
+    }
+
+
+    orders.forEach(
+        renderBetaOrder
     );
 
 }
@@ -237,7 +337,7 @@ function renderOrder(
 
     /* -------------------------- */
     /* Photos */
-    /* -------------------------- */
+/* -------------------------- */
 
     const photoGrid =
         document.createElement("div");
@@ -301,7 +401,7 @@ function renderOrder(
 
     /* -------------------------- */
     /* Actions */
-    /* -------------------------- */
+/* -------------------------- */
 
     const actions =
         document.createElement("div");
@@ -455,7 +555,284 @@ function renderOrder(
 
 
 /* -------------------------- */
-/* GENERATE PRINT SHEET */
+/* RENDER ONE BETA ORDER */
+/* -------------------------- */
+
+function renderBetaOrder(
+    order
+) {
+
+    const article =
+        document.createElement("article");
+
+
+    article.className =
+        "admin-order";
+
+
+    /* -------------------------- */
+    /* Customer */
+    /* -------------------------- */
+
+    const heading =
+        document.createElement("h3");
+
+
+    heading.textContent =
+        order.email;
+
+
+    /* -------------------------- */
+    /* Details */
+/* -------------------------- */
+
+    const details =
+        document.createElement("p");
+
+
+    const deliveryLabels = {
+
+        gallery:
+            "gallery pickup",
+
+        nosmallphotos:
+            "No Small Photos",
+
+        mail:
+            "mail"
+
+    };
+
+
+    details.textContent =
+        `${order.packSize} photos · ${deliveryLabels[order.delivery] || order.delivery}`;
+
+
+    /* -------------------------- */
+    /* Status */
+/* -------------------------- */
+
+    const status =
+        document.createElement("p");
+
+
+    status.textContent =
+        `status: ${order.status}`;
+
+
+    status.className =
+        "admin-status";
+
+
+    /* -------------------------- */
+    /* Photos */
+/* -------------------------- */
+
+    const photoGrid =
+        document.createElement("div");
+
+
+    photoGrid.className =
+        "admin-photo-grid";
+
+
+    order.photos.forEach(
+        photo => {
+
+            for (
+                let i = 0;
+                i < photo.quantity;
+                i++
+            ) {
+
+                const wrapper =
+                    document.createElement("div");
+
+
+                wrapper.className =
+                    "admin-photo";
+
+
+                const image =
+                    document.createElement("img");
+
+
+                image.src =
+                    photo.url;
+
+
+                image.alt =
+                    "customer print";
+
+
+                wrapper.appendChild(
+                    image
+                );
+
+
+                photoGrid.appendChild(
+                    wrapper
+                );
+
+            }
+
+        }
+    );
+
+
+    /* -------------------------- */
+    /* ACTIONS */
+/* -------------------------- */
+
+    const actions =
+        document.createElement("div");
+
+
+    actions.className =
+        "admin-actions";
+
+
+    /* READY */
+
+    if (
+        order.status ===
+        "ready"
+    ) {
+
+        const generateButton =
+            document.createElement("button");
+
+
+        generateButton.type =
+            "button";
+
+
+        generateButton.textContent =
+            "generate print sheet →";
+
+
+        generateButton.addEventListener(
+            "click",
+            function () {
+
+                generateBetaPrintSheet(
+                    order.betaOrderId
+                );
+
+            }
+        );
+
+
+        actions.appendChild(
+            generateButton
+        );
+
+
+        const printedButton =
+            document.createElement("button");
+
+
+        printedButton.type =
+            "button";
+
+
+        printedButton.textContent =
+            "mark printed";
+
+
+        printedButton.addEventListener(
+            "click",
+            function () {
+
+                updateBetaStatus(
+                    order.betaOrderId,
+                    "printed"
+                );
+
+            }
+        );
+
+
+        actions.appendChild(
+            printedButton
+        );
+
+    }
+
+
+    /* PRINTED */
+
+    if (
+        order.status ===
+        "printed"
+    ) {
+
+        const fulfilledButton =
+            document.createElement("button");
+
+
+        fulfilledButton.type =
+            "button";
+
+
+        fulfilledButton.textContent =
+            "mark fulfilled";
+
+
+        fulfilledButton.addEventListener(
+            "click",
+            function () {
+
+                updateBetaStatus(
+                    order.betaOrderId,
+                    "fulfilled"
+                );
+
+            }
+        );
+
+
+        actions.appendChild(
+            fulfilledButton
+        );
+
+    }
+
+
+    /* -------------------------- */
+    /* ADD EVERYTHING */
+/* -------------------------- */
+
+    article.appendChild(
+        heading
+    );
+
+    article.appendChild(
+        details
+    );
+
+    article.appendChild(
+        status
+    );
+
+    article.appendChild(
+        photoGrid
+    );
+
+    article.appendChild(
+        actions
+    );
+
+
+    betaOrderList.appendChild(
+        article
+    );
+
+}
+
+
+/* -------------------------- */
+/* GENERATE SUBSCRIPTION PRINT SHEET */
 /* -------------------------- */
 
 async function generatePrintSheet(
@@ -510,7 +887,7 @@ async function generatePrintSheet(
 
             catch (error) {}
 
-            
+
             throw new Error(
                 message
             );
@@ -552,7 +929,104 @@ async function generatePrintSheet(
 
 
 /* -------------------------- */
-/* UPDATE STATUS */
+/* GENERATE BETA PRINT SHEET */
+/* -------------------------- */
+
+async function generateBetaPrintSheet(
+    betaOrderId
+) {
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/generate-beta-print-sheet",
+                {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+
+                            password:
+                                adminPassword,
+
+                            betaOrderId:
+                                betaOrderId
+
+                        })
+
+                }
+            );
+
+
+        if (!response.ok) {
+
+            let message =
+                "Unable to generate print sheet";
+
+
+            try {
+
+                const data =
+                    await response.json();
+
+                message =
+                    data.error ||
+                    message;
+
+            }
+
+            catch (error) {}
+
+
+            throw new Error(
+                message
+            );
+
+        }
+
+
+        const blob =
+            await response.blob();
+
+
+        const url =
+            URL.createObjectURL(
+                blob
+            );
+
+
+        window.open(
+            url,
+            "_blank"
+        );
+
+    }
+
+
+    catch (error) {
+
+        console.error(
+            error
+        );
+
+        alert(
+            error.message
+        );
+
+    }
+
+}
+
+
+/* -------------------------- */
+/* UPDATE SUBSCRIPTION STATUS */
 /* -------------------------- */
 
 async function updateStatus(
@@ -621,10 +1095,96 @@ async function updateStatus(
         }
 
 
-        /*
-           Reload the orders so
-           the buttons update.
-        */
+        await reloadOrders();
+
+    }
+
+
+    catch (error) {
+
+        console.error(
+            error
+        );
+
+        alert(
+            error.message
+        );
+
+    }
+
+}
+
+
+/* -------------------------- */
+/* UPDATE BETA STATUS */
+/* -------------------------- */
+
+async function updateBetaStatus(
+    betaOrderId,
+    newStatus
+) {
+
+    const message =
+        newStatus === "printed"
+            ? "mark this order as printed?"
+            : "mark this order as fulfilled?";
+
+
+    if (
+        !confirm(message)
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/update-beta-order",
+                {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+
+                            password:
+                                adminPassword,
+
+                            betaOrderId:
+                                betaOrderId,
+
+                            status:
+                                newStatus
+
+                        })
+
+                }
+
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.error ||
+                "Unable to update beta order"
+            );
+
+        }
+
 
         await reloadOrders();
 
@@ -666,10 +1226,8 @@ async function reloadOrders() {
 
                 body:
                     JSON.stringify({
-
                         password:
                             adminPassword
-
                     })
 
             }
@@ -693,5 +1251,8 @@ async function reloadOrders() {
     renderOrders(
         data.orders
     );
+
+
+    await loadBetaOrders();
 
 }
