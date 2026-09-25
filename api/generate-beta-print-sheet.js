@@ -390,6 +390,386 @@ function drawCutMarks(
 
 
 /* -------------------------- */
+/* GET PRINT SLOTS */
+/* -------------------------- */
+
+async function getPrintSlots(
+    betaOrder
+) {
+
+    const packSize =
+        Number(
+            betaOrder.pack_size
+        );
+
+
+    if (
+        ![
+            12,
+            36
+        ].includes(
+            packSize
+        )
+    ) {
+
+        throw new Error(
+            "Invalid beta pack size"
+        );
+
+    }
+
+
+    /* -------------------------- */
+    /* SELECTED PHOTOS */
+    /* -------------------------- */
+
+    const {
+        data: selectedRows,
+        error: selectedError
+    } =
+        await supabase
+            .from(
+                "beta_selected_photos"
+            )
+            .select(
+                "beta_photo_id, quantity, created_at"
+            )
+            .eq(
+                "beta_order_id",
+                betaOrder.id
+            )
+            .order(
+                "created_at",
+                {
+                    ascending:
+                        true
+                }
+            );
+
+
+    if (
+        selectedError
+    ) {
+
+        throw selectedError;
+
+    }
+
+
+    /* -------------------------- */
+    /* GET BETA PHOTO RECORDS */
+    /* -------------------------- */
+
+    const betaPhotoIds =
+        [
+            ...new Set(
+                selectedRows.map(
+                    row =>
+                        row.beta_photo_id
+                )
+            )
+        ];
+
+
+    if (
+        betaPhotoIds.length === 0
+    ) {
+
+        throw new Error(
+            "No photos found for this order"
+        );
+
+    }
+
+
+    const {
+        data: betaPhotos,
+        error: betaPhotosError
+    } =
+        await supabase
+            .from(
+                "beta_photos"
+            )
+            .select(
+                "id, photo_id, storage_path"
+            )
+            .in(
+                "id",
+                betaPhotoIds
+            );
+
+
+    if (
+        betaPhotosError
+    ) {
+
+        throw betaPhotosError;
+
+    }
+
+
+    const photoMap =
+        new Map();
+
+
+    for (
+        const photo
+        of betaPhotos
+    ) {
+
+        photoMap.set(
+            photo.id,
+            photo
+        );
+
+    }
+
+
+    /* -------------------------- */
+    /* CREATE PRINT SLOTS */
+    /* -------------------------- */
+
+    const printSlots =
+        [];
+
+
+    for (
+        const selected
+        of selectedRows
+    ) {
+
+        const photo =
+            photoMap.get(
+                selected.beta_photo_id
+            );
+
+
+        if (
+            !photo ||
+            !photo.storage_path
+        ) {
+
+            continue;
+
+        }
+
+
+        const quantity =
+            Number(
+                selected.quantity
+            );
+
+
+        for (
+            let i = 0;
+            i < quantity;
+            i++
+        ) {
+
+            printSlots.push({
+
+                photoId:
+                    photo.photo_id,
+
+                storagePath:
+                    photo.storage_path
+
+            });
+
+        }
+
+    }
+
+
+    if (
+        printSlots.length !==
+        packSize
+    ) {
+
+        throw new Error(
+            `Expected ${packSize} prints but found ${printSlots.length}`
+        );
+
+    }
+
+
+    return printSlots;
+
+}
+
+
+/* -------------------------- */
+/* ADD ORDER TO PDF */
+/* -------------------------- */
+
+async function addOrderToPdf(
+    pdfDoc,
+    betaOrder
+) {
+
+    const printSlots =
+        await getPrintSlots(
+            betaOrder
+        );
+
+
+    const pageCount =
+        Math.ceil(
+            printSlots.length / 6
+        );
+
+
+    for (
+        let pageIndex = 0;
+        pageIndex < pageCount;
+        pageIndex++
+    ) {
+
+        const page =
+            pdfDoc.addPage([
+                A4_WIDTH,
+                A4_HEIGHT
+            ]);
+
+
+        const pageSlots =
+            printSlots.slice(
+                pageIndex * 6,
+                pageIndex * 6 + 6
+            );
+
+
+        for (
+            let slotIndex = 0;
+            slotIndex <
+            pageSlots.length;
+            slotIndex++
+        ) {
+
+            const slot =
+                pageSlots[
+                    slotIndex
+                ];
+
+
+            /* DOWNLOAD */
+
+            const originalBuffer =
+                await downloadPhoto(
+                    slot.storagePath
+                );
+
+
+            /* CROP */
+
+            const squareBuffer =
+                await makeSquarePhoto(
+                    originalBuffer
+                );
+
+
+            /* EMBED */
+
+            const image =
+                await pdfDoc.embedJpg(
+                    squareBuffer
+                );
+
+
+            /* POSITION */
+
+            const column =
+                slotIndex %
+                COLUMNS;
+
+            const row =
+                Math.floor(
+                    slotIndex /
+                    COLUMNS
+                );
+
+
+            const x =
+                LEFT_MARGIN +
+                column *
+                PRINT_SIZE;
+
+
+            const y =
+                BOTTOM_MARGIN +
+                (
+                    ROWS -
+                    1 -
+                    row
+                ) *
+                PRINT_SIZE;
+
+
+            /* WHITE PRINT */
+
+            page.drawRectangle({
+
+                x,
+                y,
+
+                width:
+                    PRINT_SIZE,
+
+                height:
+                    PRINT_SIZE,
+
+                color:
+                    rgb(1, 1, 1)
+
+            });
+
+
+            /* PHOTO */
+
+            page.drawImage(
+                image,
+                {
+
+                    x:
+                        x +
+                        (
+                            PRINT_SIZE -
+                            PHOTO_SIZE
+                        ) / 2,
+
+                    y:
+                        y +
+                        (
+                            PRINT_SIZE -
+                            PHOTO_SIZE
+                        ) / 2,
+
+                    width:
+                        PHOTO_SIZE,
+
+                    height:
+                        PHOTO_SIZE
+
+                }
+            );
+
+
+            /* CUT MARKS */
+
+            drawCutMarks(
+                page,
+                x,
+                y
+            );
+
+        }
+
+    }
+
+}
+
+
+/* -------------------------- */
 /* API */
 /* -------------------------- */
 
@@ -415,7 +795,8 @@ module.exports =
 
             const {
                 password,
-                betaOrderId
+                betaOrderId,
+                betaOrderIds
             } =
                 req.body;
 
@@ -438,265 +819,143 @@ module.exports =
             }
 
 
-         /* -------------------------- */
-/* FIND SPECIFIC BETA ORDER */
-/* -------------------------- */
-
-if (!betaOrderId) {
-
-    return res.status(400).json({
-        error:
-            "Missing beta order ID"
-    });
-
-}
-
-
-const {
-    data: betaOrder,
-    error: betaOrderError
-} =
-    await supabase
-        .from("beta_orders")
-        .select("*")
-        .eq(
-            "id",
-            betaOrderId
-        )
-        .single();
-
-
-if (
-    betaOrderError
-) {
-
-    throw betaOrderError;
-
-}
-
-
-/*
-   Only generate sheets for
-   orders that are ready or
-   already printed.
-*/
-
-if (
-    ![
-        "ready",
-        "printed"
-    ].includes(
-        betaOrder.status
-    )
-) {
-
-    return res.status(400).json({
-
-        error:
-            "This order is not ready for printing"
-
-    });
-
-}
-
-
-const packSize =
-    Number(
-        betaOrder.pack_size
-    );
-
-
-if (
-    ![
-        12,
-        36
-    ].includes(
-        packSize
-    )
-) {
-
-    return res.status(400).json({
-        error:
-            "Invalid beta pack size"
-    });
-
-}
-
-
             /* -------------------------- */
-            /* SELECTED PHOTOS */
+            /* DETERMINE ORDERS */
             /* -------------------------- */
 
-            const {
-                data: selectedRows,
-                error: selectedError
-            } =
-                await supabase
-                    .from(
-                        "beta_selected_photos"
-                    )
-                    .select(
-                        "beta_photo_id, quantity, created_at"
-                    )
-                    .eq(
-                        "beta_order_id",
-                        betaOrder.id
-                    )
-                    .order(
-                        "created_at",
-                        {
-                            ascending:
-                                true
-                        }
-                    );
+            let orderIds = [];
 
 
             if (
-                selectedError
+                Array.isArray(
+                    betaOrderIds
+                ) &&
+                betaOrderIds.length > 0
             ) {
 
-                throw selectedError;
+                orderIds =
+                    betaOrderIds;
 
             }
 
+            else if (
+                betaOrderId
+            ) {
 
-            /* -------------------------- */
-            /* GET BETA PHOTO RECORDS */
-            /* -------------------------- */
-
-            const betaPhotoIds =
-                [
-                    ...new Set(
-                        selectedRows.map(
-                            row =>
-                                row.beta_photo_id
-                        )
-                    )
+                orderIds = [
+                    betaOrderId
                 ];
 
+            }
 
-            if (
-                betaPhotoIds.length === 0
-            ) {
+            else {
 
                 return res.status(400).json({
                     error:
-                        "No photos found for this order"
+                        "Missing beta order ID"
                 });
 
             }
 
 
+            /* -------------------------- */
+            /* GET ORDERS */
+            /* -------------------------- */
+
             const {
-                data: betaPhotos,
-                error: betaPhotosError
+                data: betaOrders,
+                error: betaOrdersError
             } =
                 await supabase
-                    .from(
-                        "beta_photos"
-                    )
-                    .select(
-                        "id, photo_id, storage_path"
-                    )
+                    .from("beta_orders")
+                    .select("*")
                     .in(
                         "id",
-                        betaPhotoIds
+                        orderIds
                     );
 
 
             if (
-                betaPhotosError
+                betaOrdersError
             ) {
 
-                throw betaPhotosError;
+                throw betaOrdersError;
 
             }
 
 
-            const photoMap =
-                new Map();
-
-
-            for (
-                const photo
-                of betaPhotos
+            if (
+                !betaOrders ||
+                betaOrders.length === 0
             ) {
 
-                photoMap.set(
-                    photo.id,
-                    photo
+                return res.status(400).json({
+                    error:
+                        "No orders found"
+                });
+
+            }
+
+
+            /* -------------------------- */
+            /* PRESERVE ORDER */
+            /* -------------------------- */
+
+            const orderMap =
+                new Map(
+                    betaOrders.map(
+                        order => [
+                            order.id,
+                            order
+                        ]
+                    )
                 );
 
-            }
-
 
             /* -------------------------- */
-            /* CREATE PRINT SLOTS */
+            /* VALIDATE ORDERS */
             /* -------------------------- */
-
-            const printSlots =
-                [];
-
 
             for (
-                const selected
-                of selectedRows
+                const orderId
+                of orderIds
             ) {
 
-                const photo =
-                    photoMap.get(
-                        selected.beta_photo_id
+                const order =
+                    orderMap.get(
+                        orderId
                     );
 
 
                 if (
-                    !photo ||
-                    !photo.storage_path
+                    !order
                 ) {
 
-                    continue;
-
-                }
-
-
-                const quantity =
-                    Number(
-                        selected.quantity
-                    );
-
-
-                for (
-                    let i = 0;
-                    i < quantity;
-                    i++
-                ) {
-
-                    printSlots.push({
-
-                        photoId:
-                            photo.photo_id,
-
-                        storagePath:
-                            photo.storage_path
-
+                    return res.status(400).json({
+                        error:
+                            "One or more selected orders could not be found"
                     });
 
                 }
 
-            }
 
+                if (
+                    ![
+                        "ready",
+                        "printed"
+                    ].includes(
+                        order.status
+                    )
+                ) {
 
-            if (
-                printSlots.length !==
-                packSize
-            ) {
+                    return res.status(400).json({
 
-                return res.status(400).json({
+                        error:
+                            `Order ${order.id} is not ready for printing`
 
-                    error:
-                        `Expected ${packSize} prints but found ${printSlots.length}`
+                    });
 
-                });
+                }
 
             }
 
@@ -709,156 +968,25 @@ if (
                 await PDFDocument.create();
 
 
-            const pageCount =
-                Math.ceil(
-                    printSlots.length / 6
-                );
-
+            /* -------------------------- */
+            /* ADD ORDERS */
+            /* -------------------------- */
 
             for (
-                let pageIndex = 0;
-                pageIndex < pageCount;
-                pageIndex++
+                const orderId
+                of orderIds
             ) {
 
-                const page =
-                    pdfDoc.addPage([
-                        A4_WIDTH,
-                        A4_HEIGHT
-                    ]);
-
-
-                const pageSlots =
-                    printSlots.slice(
-                        pageIndex * 6,
-                        pageIndex * 6 + 6
+                const order =
+                    orderMap.get(
+                        orderId
                     );
 
 
-                for (
-                    let slotIndex = 0;
-                    slotIndex <
-                    pageSlots.length;
-                    slotIndex++
-                ) {
-
-                    const slot =
-                        pageSlots[
-                            slotIndex
-                        ];
-
-
-                    /* DOWNLOAD */
-
-                    const originalBuffer =
-                        await downloadPhoto(
-                            slot.storagePath
-                        );
-
-
-                    /* CROP */
-
-                    const squareBuffer =
-                        await makeSquarePhoto(
-                            originalBuffer
-                        );
-
-
-                    /* EMBED */
-
-                    const image =
-                        await pdfDoc.embedJpg(
-                            squareBuffer
-                        );
-
-
-                    /* POSITION */
-
-                    const column =
-                        slotIndex %
-                        COLUMNS;
-
-                    const row =
-                        Math.floor(
-                            slotIndex /
-                            COLUMNS
-                        );
-
-
-                    const x =
-                        LEFT_MARGIN +
-                        column *
-                        PRINT_SIZE;
-
-
-                    const y =
-                        BOTTOM_MARGIN +
-                        (
-                            ROWS -
-                            1 -
-                            row
-                        ) *
-                        PRINT_SIZE;
-
-
-                    /* WHITE PRINT */
-
-                    page.drawRectangle({
-
-                        x,
-                        y,
-
-                        width:
-                            PRINT_SIZE,
-
-                        height:
-                            PRINT_SIZE,
-
-                        color:
-                            rgb(1, 1, 1)
-
-                    });
-
-
-                    /* PHOTO */
-
-                    page.drawImage(
-                        image,
-                        {
-
-                            x:
-                                x +
-                                (
-                                    PRINT_SIZE -
-                                    PHOTO_SIZE
-                                ) / 2,
-
-                            y:
-                                y +
-                                (
-                                    PRINT_SIZE -
-                                    PHOTO_SIZE
-                                ) / 2,
-
-                            width:
-                                PHOTO_SIZE,
-
-                            height:
-                                PHOTO_SIZE
-
-                        }
-                    );
-
-
-                    /* CUT MARKS */
-
-                    drawCutMarks(
-                        page,
-                        x,
-                        y
-                    );
-
-                }
+                await addOrderToPdf(
+                    pdfDoc,
+                    order
+                );
 
             }
 
@@ -871,9 +999,6 @@ if (
                 await pdfDoc.save();
 
 
-           
-
-
             /* -------------------------- */
             /* RETURN PDF */
             /* -------------------------- */
@@ -884,9 +1009,15 @@ if (
             );
 
 
+            const filename =
+                orderIds.length === 1
+                    ? "tiny-photo-club-beta-print-sheet.pdf"
+                    : "tiny-photo-club-beta-print-batch.pdf";
+
+
             res.setHeader(
                 "Content-Disposition",
-                'inline; filename="tiny-photo-club-beta-print-sheet.pdf"'
+                `inline; filename="${filename}"`
             );
 
 
@@ -901,17 +1032,19 @@ if (
 
         catch (error) {
 
-    console.error(
-        "Generate beta print sheet error:",
-        error
-    );
+            console.error(
+                "Generate beta print sheet error:",
+                error
+            );
 
-    return res.status(500).json({
-        error:
-            error.message ||
-            "Unable to generate print sheet"
-    });
+            return res.status(500).json({
 
-}
+                error:
+                    error.message ||
+                    "Unable to generate print sheet"
+
+            });
+
+        }
 
     };
