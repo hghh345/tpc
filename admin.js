@@ -253,111 +253,41 @@ function renderOrders(
 /* -------------------------- */
 /* RENDER BETA ORDERS */
 /* -------------------------- */
-function renderBetaOrders(
-    orders
-) {
-
-    betaOrderList.innerHTML =
-        "";
-
+function renderBetaOrders(orders) {
+    betaOrderList.innerHTML = "";
 
     if (!orders.length) {
-
         betaOrderList.innerHTML =
             "<p>no summer experiment orders yet ♡</p>";
-
         return;
-
     }
 
+    const batchControls = document.createElement("div");
+    batchControls.className = "beta-batch-controls";
 
-    /* -------------------------- */
-    /* BATCH CONTROLS */
-    /* -------------------------- */
+    const selectAllButton = document.createElement("button");
+    selectAllButton.type = "button";
+    selectAllButton.textContent = "select all";
+    selectAllButton.onclick = () => {
+        document
+            .querySelectorAll(".beta-order-checkbox")
+            .forEach(checkbox => {
+                checkbox.checked = true;
+            });
+    };
 
-    const batchControls =
-        document.createElement("div");
+    const generateBatchButton = document.createElement("button");
+    generateBatchButton.type = "button";
+    generateBatchButton.textContent = "generate selected →";
+    generateBatchButton.onclick = generateBetaPrintBatch;
 
+    batchControls.appendChild(selectAllButton);
+    batchControls.appendChild(generateBatchButton);
 
-    batchControls.className =
-        "beta-batch-controls";
+    betaOrderList.appendChild(batchControls);
 
-
-    const selectAllButton =
-        document.createElement("button");
-
-
-    selectAllButton.type =
-        "button";
-
-
-    selectAllButton.textContent =
-        "select all";
-
-
-    selectAllButton.addEventListener(
-        "click",
-        function () {
-
-            const checkboxes =
-                betaOrderList.querySelectorAll(
-                    ".beta-order-checkbox"
-                );
-
-
-            checkboxes.forEach(
-                checkbox => {
-                    checkbox.checked =
-                        true;
-                }
-            );
-
-        }
-    );
-
-
-    const generateBatchButton =
-        document.createElement("button");
-
-
-    generateBatchButton.type =
-        "button";
-
-
-    generateBatchButton.textContent =
-        "generate selected →";
-
-
-    generateBatchButton.addEventListener(
-        "click",
-        generateBetaPrintBatch
-    );
-
-
-    batchControls.appendChild(
-        selectAllButton
-    );
-
-    batchControls.appendChild(
-        generateBatchButton
-    );
-
-
-    betaOrderList.appendChild(
-        batchControls
-    );
-
-
-    /* -------------------------- */
-    /* ORDERS */
-    /* -------------------------- */
-
-    orders.forEach(
-        renderBetaOrder
-    );
-
+    orders.forEach(renderBetaOrder);
 }
-
 
 /* -------------------------- */
 /* RENDER ONE ORDER */
@@ -379,13 +309,18 @@ function renderOrder(
     /* Customer */
     /* -------------------------- */
 
-    const heading =
-        document.createElement("h3");
+  const heading = document.createElement("h3");
 
+const checkbox = document.createElement("input");
+checkbox.type = "checkbox";
+checkbox.className = "beta-order-checkbox";
+checkbox.dataset.orderId = order.betaOrderId;
 
-    heading.textContent =
-        order.email;
+const email = document.createElement("span");
+email.textContent = order.email;
 
+heading.appendChild(checkbox);
+heading.appendChild(email);
 
     /* -------------------------- */
     /* Details */
