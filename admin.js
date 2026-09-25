@@ -253,7 +253,6 @@ function renderOrders(
 /* -------------------------- */
 /* RENDER BETA ORDERS */
 /* -------------------------- */
-
 function renderBetaOrders(
     orders
 ) {
@@ -271,6 +270,87 @@ function renderBetaOrders(
 
     }
 
+
+    /* -------------------------- */
+    /* BATCH CONTROLS */
+    /* -------------------------- */
+
+    const batchControls =
+        document.createElement("div");
+
+
+    batchControls.className =
+        "beta-batch-controls";
+
+
+    const selectAllButton =
+        document.createElement("button");
+
+
+    selectAllButton.type =
+        "button";
+
+
+    selectAllButton.textContent =
+        "select all";
+
+
+    selectAllButton.addEventListener(
+        "click",
+        function () {
+
+            const checkboxes =
+                betaOrderList.querySelectorAll(
+                    ".beta-order-checkbox"
+                );
+
+
+            checkboxes.forEach(
+                checkbox => {
+                    checkbox.checked =
+                        true;
+                }
+            );
+
+        }
+    );
+
+
+    const generateBatchButton =
+        document.createElement("button");
+
+
+    generateBatchButton.type =
+        "button";
+
+
+    generateBatchButton.textContent =
+        "generate selected →";
+
+
+    generateBatchButton.addEventListener(
+        "click",
+        generateBetaPrintBatch
+    );
+
+
+    batchControls.appendChild(
+        selectAllButton
+    );
+
+    batchControls.appendChild(
+        generateBatchButton
+    );
+
+
+    betaOrderList.appendChild(
+        batchControls
+    );
+
+
+    /* -------------------------- */
+    /* ORDERS */
+    /* -------------------------- */
 
     orders.forEach(
         renderBetaOrder
@@ -574,12 +654,42 @@ function renderBetaOrder(
     /* Customer */
     /* -------------------------- */
 
-    const heading =
-        document.createElement("h3");
+ const heading =
+    document.createElement("h3");
 
 
-    heading.textContent =
-        order.email;
+const checkbox =
+    document.createElement("input");
+
+
+checkbox.type =
+    "checkbox";
+
+
+checkbox.className =
+    "beta-order-checkbox";
+
+
+checkbox.dataset.orderId =
+    order.betaOrderId;
+
+
+heading.appendChild(
+    checkbox
+);
+
+
+const email =
+    document.createElement("span");
+
+
+email.textContent =
+    order.email;
+
+
+heading.appendChild(
+    email
+);
 
 
     /* -------------------------- */
@@ -1245,5 +1355,113 @@ async function reloadOrders() {
 
 
     await loadBetaOrders();
+
+}
+/* -------------------------- */
+/* GENERATE BETA PRINT BATCH */
+/* -------------------------- */
+
+async function generateBetaPrintBatch() {
+
+    const checkboxes =
+        betaOrderList.querySelectorAll(
+            ".beta-order-checkbox:checked"
+        );
+
+
+    const betaOrderIds =
+        Array.from(
+            checkboxes
+        ).map(
+            checkbox =>
+                checkbox.dataset.orderId
+        );
+
+
+    if (
+        betaOrderIds.length === 0
+    ) {
+
+        alert(
+            "select at least one order ♡"
+        );
+
+        return;
+
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/generate-beta-print-batch",
+                {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+
+                            password:
+                                adminPassword,
+
+                            betaOrderIds:
+                                betaOrderIds
+
+                        })
+
+                }
+            );
+
+
+        if (!response.ok) {
+
+            const raw =
+                await response.text();
+
+
+            throw new Error(
+                raw ||
+                "Unable to generate print batch"
+            );
+
+        }
+
+
+        const blob =
+            await response.blob();
+
+
+        const url =
+            URL.createObjectURL(
+                blob
+            );
+
+
+        window.open(
+            url,
+            "_blank"
+        );
+
+    }
+
+
+    catch (error) {
+
+        console.error(
+            error
+        );
+
+        alert(
+            error.message
+        );
+
+    }
 
 }
