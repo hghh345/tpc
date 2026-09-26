@@ -59,9 +59,9 @@ module.exports = async (req, res) => {
 
         const allowedPrices = [
 
-            "price_1UHrNRA5iFvf2pvFrZozFdjJ",
+            "price_1UHqVsA5iFvf2pvFl4gaGU94",
 
-            "price_1UHrNjA5iFvf2pvFjDD96XBQ"
+            "price_1UHqWOA5iFvf2pvFnO3hENH8"
 
         ];
 
@@ -84,8 +84,8 @@ module.exports = async (req, res) => {
 
         const expectedPrice =
             Number(packSize) === 36
-                ? "price_1UHrNjA5iFvf2pvFjDD96XBQ"
-                : "price_1UHrNRA5iFvf2pvFrZozFdjJ";
+                ? "price_1UHqVsA5iFvf2pvFl4gaGU94"
+                : "price_1UHqWOA5iFvf2pvFnO3hENH8";
 
 
         if (
