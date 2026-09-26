@@ -1443,30 +1443,3 @@ async function generateBetaPrintBatch() {
 
 }
 
-.beta-batch-controls {
-    display: flex;
-    gap: 10px;
-    margin: 20px 0 30px;
-    align-items: center;
-}
-
-.beta-batch-controls button {
-    padding: 8px 12px;
-    border: 1px solid #000;
-    background: #fff;
-    color: #000;
-    cursor: pointer;
-    font: inherit;
-}
-
-.beta-batch-controls button:hover {
-    background: #000;
-    color: #fff;
-}
-
-.beta-order-checkbox {
-    margin-right: 10px;
-    width: 16px;
-    height: 16px;
-    vertical-align: middle;
-}
