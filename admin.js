@@ -1060,7 +1060,49 @@ async function generateBetaPrintSheet(
 
 }
 
+async function generateBetaPrintBatch() {
+    const checkboxes = document.querySelectorAll(
+        ".beta-order-checkbox:checked"
+    );
 
+    const betaOrderIds = Array.from(checkboxes).map(
+        checkbox => checkbox.dataset.orderId
+    );
+
+    if (!betaOrderIds.length) {
+        alert("select at least one order first.");
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            "/api/generate-beta-print-sheet",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    password: adminPassword,
+                    betaOrderIds
+                })
+            }
+        );
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || "could not generate print batch");
+        }
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+
+        window.open(url, "_blank");
+    } catch (error) {
+        console.error(error);
+        alert("could not generate print batch.");
+    }
+}
 /* -------------------------- */
 /* UPDATE SUBSCRIPTION STATUS */
 /* -------------------------- */
@@ -1399,4 +1441,31 @@ async function generateBetaPrintBatch() {
 
     }
 
+}
+.beta-batch-controls {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0 30px;
+    align-items: center;
+}
+
+.beta-batch-controls button {
+    padding: 8px 12px;
+    border: 1px solid #000;
+    background: #fff;
+    color: #000;
+    cursor: pointer;
+    font: inherit;
+}
+
+.beta-batch-controls button:hover {
+    background: #000;
+    color: #fff;
+}
+
+.beta-order-checkbox {
+    margin-right: 10px;
+    width: 16px;
+    height: 16px;
+    vertical-align: middle;
 }
