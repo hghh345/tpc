@@ -1442,6 +1442,7 @@ async function generateBetaPrintBatch() {
     }
 
 }
+
 .beta-batch-controls {
     display: flex;
     gap: 10px;
