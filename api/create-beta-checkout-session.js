@@ -82,10 +82,10 @@ module.exports = async (req, res) => {
         /* Validate pack */
         /* -------------------------- */
 
-        const expectedPrice =
-            Number(packSize) === 36
-                ? "price_1UHqVsA5iFvf2pvFl4gaGU94"
-                : "price_1UHqWOA5iFvf2pvFnO3hENH8";
+       const expectedPrice =
+    Number(packSize) === 36
+        ? "price_1UHqWOA5iFvf2pvFnO3hENH8"
+        : "price_1UHqVsA5iFvf2pvFl4gaGU94";
 
 
         if (
