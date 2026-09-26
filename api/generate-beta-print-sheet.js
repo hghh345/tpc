@@ -158,236 +158,195 @@ async function makeSquarePhoto(
 /* -------------------------- */
 /* CUT MARKS */
 /* -------------------------- */
-
 function drawCutMarks(
     page,
     x,
     y
 ) {
 
-    const thickness =
-        0.5;
-
+    const thickness = 0.5;
+    const centerMarkLength = 6;
 
     /* bottom-left */
 
     page.drawLine({
-
         start: {
-            x:
-                x -
-                CUT_MARK_LENGTH,
+            x: x - CUT_MARK_LENGTH,
             y
         },
-
         end: {
-            x:
-                x - 2,
+            x: x - 2,
             y
         },
-
         thickness,
-        color:
-            rgb(0, 0, 0)
-
+        color: rgb(0, 0, 0)
     });
 
-
     page.drawLine({
-
         start: {
             x,
-            y:
-                y -
-                CUT_MARK_LENGTH
+            y: y - CUT_MARK_LENGTH
         },
-
         end: {
             x,
-            y:
-                y - 2
+            y: y - 2
         },
-
         thickness,
-        color:
-            rgb(0, 0, 0)
-
+        color: rgb(0, 0, 0)
     });
 
 
     /* bottom-right */
 
     page.drawLine({
-
         start: {
-            x:
-                x +
-                PRINT_SIZE +
-                2,
+            x: x + PRINT_SIZE + 2,
             y
         },
-
         end: {
-            x:
-                x +
-                PRINT_SIZE +
-                CUT_MARK_LENGTH,
+            x: x + PRINT_SIZE + CUT_MARK_LENGTH,
             y
         },
-
         thickness,
-        color:
-            rgb(0, 0, 0)
-
+        color: rgb(0, 0, 0)
     });
 
-
     page.drawLine({
-
         start: {
-            x:
-                x +
-                PRINT_SIZE,
-            y:
-                y -
-                CUT_MARK_LENGTH
+            x: x + PRINT_SIZE,
+            y: y - CUT_MARK_LENGTH
         },
-
         end: {
-            x:
-                x +
-                PRINT_SIZE,
-            y:
-                y - 2
+            x: x + PRINT_SIZE,
+            y: y - 2
         },
-
         thickness,
-        color:
-            rgb(0, 0, 0)
-
+        color: rgb(0, 0, 0)
     });
 
 
     /* top-left */
 
     page.drawLine({
-
         start: {
-            x:
-                x -
-                CUT_MARK_LENGTH,
-
-            y:
-                y +
-                PRINT_SIZE
+            x: x - CUT_MARK_LENGTH,
+            y: y + PRINT_SIZE
         },
-
         end: {
-            x:
-                x - 2,
-
-            y:
-                y +
-                PRINT_SIZE
+            x: x - 2,
+            y: y + PRINT_SIZE
         },
-
         thickness,
-        color:
-            rgb(0, 0, 0)
-
+        color: rgb(0, 0, 0)
     });
 
-
     page.drawLine({
-
         start: {
             x,
-            y:
-                y +
-                PRINT_SIZE +
-                2
+            y: y + PRINT_SIZE + 2
         },
-
         end: {
             x,
-            y:
-                y +
-                PRINT_SIZE +
-                CUT_MARK_LENGTH
+            y: y + PRINT_SIZE + CUT_MARK_LENGTH
         },
-
         thickness,
-        color:
-            rgb(0, 0, 0)
-
+        color: rgb(0, 0, 0)
     });
 
 
     /* top-right */
 
     page.drawLine({
-
         start: {
-            x:
-                x +
-                PRINT_SIZE +
-                2,
-
-            y:
-                y +
-                PRINT_SIZE
+            x: x + PRINT_SIZE + 2,
+            y: y + PRINT_SIZE
         },
-
         end: {
-            x:
-                x +
-                PRINT_SIZE +
-                CUT_MARK_LENGTH,
-
-            y:
-                y +
-                PRINT_SIZE
+            x: x + PRINT_SIZE + CUT_MARK_LENGTH,
+            y: y + PRINT_SIZE
         },
-
         thickness,
-        color:
-            rgb(0, 0, 0)
+        color: rgb(0, 0, 0)
+    });
 
+    page.drawLine({
+        start: {
+            x: x + PRINT_SIZE,
+            y: y + PRINT_SIZE + 2
+        },
+        end: {
+            x: x + PRINT_SIZE,
+            y: y + PRINT_SIZE + CUT_MARK_LENGTH
+        },
+        thickness,
+        color: rgb(0, 0, 0)
     });
 
 
+    /* bottom-center */
+
     page.drawLine({
-
         start: {
-            x:
-                x +
-                PRINT_SIZE,
-
-            y:
-                y +
-                PRINT_SIZE +
-                2
+            x: x + PRINT_SIZE / 2,
+            y: y - centerMarkLength
         },
-
         end: {
-            x:
-                x +
-                PRINT_SIZE,
-
-            y:
-                y +
-                PRINT_SIZE +
-                CUT_MARK_LENGTH
+            x: x + PRINT_SIZE / 2,
+            y: y - 2
         },
-
         thickness,
-        color:
-            rgb(0, 0, 0)
+        color: rgb(0, 0, 0)
+    });
 
+
+    /* top-center */
+
+    page.drawLine({
+        start: {
+            x: x + PRINT_SIZE / 2,
+            y: y + PRINT_SIZE + 2
+        },
+        end: {
+            x: x + PRINT_SIZE / 2,
+            y: y + PRINT_SIZE + centerMarkLength
+        },
+        thickness,
+        color: rgb(0, 0, 0)
+    });
+
+
+    /* left-center */
+
+    page.drawLine({
+        start: {
+            x: x - centerMarkLength,
+            y: y + PRINT_SIZE / 2
+        },
+        end: {
+            x: x - 2,
+            y: y + PRINT_SIZE / 2
+        },
+        thickness,
+        color: rgb(0, 0, 0)
+    });
+
+
+    /* right-center */
+
+    page.drawLine({
+        start: {
+            x: x + PRINT_SIZE + 2,
+            y: y + PRINT_SIZE / 2
+        },
+        end: {
+            x: x + PRINT_SIZE + centerMarkLength,
+            y: y + PRINT_SIZE / 2
+        },
+        thickness,
+        color: rgb(0, 0, 0)
     });
 
 }
-
 
 /* -------------------------- */
 /* GET PRINT SLOTS */
