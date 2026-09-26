@@ -1372,7 +1372,7 @@ async function generateBetaPrintBatch() {
 
         const response =
             await fetch(
-                "/api/generate-beta-print-batch",
+                "/api/generate-beta-print-sheet",
                 {
 
                     method: "POST",
