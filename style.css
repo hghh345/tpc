@@ -1100,3 +1100,30 @@ padding:0;
     margin: 0;
 }
 
+.print-ideas {
+    margin: 0 auto 30px;
+    max-width: 700px;
+    text-align: center;
+}
+
+.print-ideas summary {
+    cursor: pointer;
+    font-size: 0.9rem;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    list-style: none;
+}
+
+.print-ideas summary::-webkit-details-marker {
+    display: none;
+}
+
+.print-ideas-content {
+    margin-top: 20px;
+    font-size: 0.85rem;
+    line-height: 1.7;
+}
+
+.print-ideas-content p {
+    margin: 0;
+}
