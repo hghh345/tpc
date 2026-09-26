@@ -18,10 +18,10 @@ const betaCheckoutButton =
 /* -------------------------- */
 
 const BETA_PRICE_12 =
-    "price_1UHrNRA5iFvf2pvFrZozFdjJ";
+    "price_1UHqVsA5iFvf2pvFl4gaGU94";
 
 const BETA_PRICE_36 =
-    "price_1UHrNjA5iFvf2pvFjDD96XBQ";
+    "price_1UHqWOA5iFvf2pvFnO3hENH8";
 
 
 const betaPriceId =
